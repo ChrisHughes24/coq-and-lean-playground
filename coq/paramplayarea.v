@@ -14,28 +14,32 @@ Definition R : Type := Type -> Type.
 Definition P (F : Type -> Type) (Z : Type) := 
   forall (X : Type), (X -> Z) -> (F X -> F Z).
 
-Definition O:=
+Definition O :=
   forall (X : Type), ((X -> False) -> X) -> X.
 
-Definition N : Type :=
-forall (X : Type), (X -> X) -> (X -> X).
+Inductive N : Type :=
+Nmk : forall (X : Type), X -> N.
 
 Inductive M : Type :=
 | Mmk (X : Type) (f : (X -> X) -> X) : M.
 
 Definition L (X Y : Type) : Type := X -> Y -> Type.
 
-Inductive K (B : forall (A : Type), A -> A -> Type) (X : Type) := 
-| Kmk (x : X) (f : forall y : X, B X x y) : K _ _.
+Definition K (F : Type -> Type) 
+  (G : Type -> Type) (X : Type) := 
+F X -> G X.
 
+Definition J (X : Type) : Type := (X -> bool -> X) -> X.
 
-Parametricity False as False2 arity 3.
-Parametricity bool as bool_param arity 3.
-
-Parametricity K as K_param arity 2.
-Print K_param.
 Parametricity eq as eq_param arity 1.
 Parametricity eq as eq_param2 arity 2.
+Parametricity bool as boolp arity 2.
+Parametricity N as N_param arity 2.
+Parametricity K as K_param arity 2.
+Parametricity J as J_param arity 2.
+Print K_param. 
+Print J_param.
+
 Parametricity T as T_param arity 2.
 Print T_param.
 Parametricity S as S_param arity 2.
