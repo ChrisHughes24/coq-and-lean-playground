@@ -32,80 +32,87 @@ variables {X Y : Type} (R : X → Y → Prop)
 
 open function sum
 
--- def rel : X ⊕ Y → X ⊕ Y → Prop :=
--- λ a b, ∃ x y, a = inl x ∧ b = inr y ∧ R x y
-
 inductive rel : X ⊕ Y → X ⊕ Y → Prop
 | lr : ∀ {x y}, R x y → rel (inl x) (inr y)
 | rl : ∀ {x y}, R x y → rel (inr y) (inl x)
-| transl : ∀ {x₁ x₂ y}, R x₁ y → R x₂ y → rel (inl x₁) (inl x₂)
-| transr : ∀ {x y₁ y₂}, R x y₁ → R x y₂ → rel (inr y₁) (inr y₂)
 | refll : ∀ x, rel (inl x) (inl x)
 | refly : ∀ y, rel (inr y) (inr y)
+| transl : ∀ {x₁ x₂ y}, R x₁ y → R x₂ y → rel (inl x₁) (inl x₂)
+| transr : ∀ {x y₁ y₂}, R x y₁ → R x y₂ → rel (inr y₁) (inr y₂)
 
-example (a b c : X ⊕ Y)
-  (h₁ : ∀ x₁ x₂ y₁ y₂, R x₁ y₁ → R x₂ y₁ → R x₂ y₂ → R x₁ y₂) 
-  : 
+lemma rel_refl (a : X ⊕ Y) : rel R a a :=
+by cases a; constructor
+
+lemma rel_symm {a b : X ⊕ Y} : rel R a b → rel R b a :=
+begin
+  intro h,
+  induction h,
+  { apply rel.rl; assumption },
+  { apply rel.lr; assumption },
+  { exact rel_refl _ _ },
+  { exact rel_refl _ _ },
+  { apply rel.transl; assumption },
+  { apply rel.transr; assumption }
+end
+
+lemma rel_trans 
+  (hR : ∀ {x₁ x₂ y₁ y₂}, R x₁ y₁ → R x₂ y₁ → R x₂ y₂ → R x₁ y₂)
+  {a b c : X ⊕ Y} : 
   rel R a b → rel R b c → rel R a c :=
 begin
   intros hab hbc,
-  induction hab with x₁ y₁ hxy₁ _ _ _ x₁ x₂ y₁ hxy₁ hxy₂,
+  induction hab with x₁ y₁ hxy₁ x₁ y₁ hxy₁ _ _ x₁ x₂ y₁ hxy₁ hxy₂
+    x₁ y₁ y₂ hxy₁ hxy₂,
   { generalize hb : (inr y₁ : X ⊕ Y) = b,
     rw hb at hbc,
-    induction hbc with _ _ _ x₂ y₂ hxy₂ _ _ _ _ _ x₂ y₂ y₃ hxy₂ hxy₃
-    _ y₂,
-    { injection hb },
-    { injection hb,
-      subst y₂,
-      exact rel.transl hxy₁ hxy₂ },
-    { injection hb },
-    { injection hb,
-      subst y₂,
-      exact rel.lr (h₁ x₁ x₂ y₁ y₃ hxy₁ hxy₂ hxy₃) },
-    { injection hb },
-    { injection hb,
-      subst y₂,
-      exact rel.lr hxy₁ } },
-  { admit },
+    induction hbc with _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ hxy₂ hxy₃;
+    injection hb with hb; subst hb; constructor; try {assumption},
+    { exact hR hxy₁ hxy₂ hxy₃ } },
+  { generalize hb : (inl x₁ : X ⊕ Y) = b,
+    rw hb at hbc,
+    induction hbc with _ _ _ _ _ _ _ _ _ _ _ hxy₂ hxy₃;
+    injection hb with hb; subst hb; constructor; try {assumption},
+    { exact hR hxy₃ hxy₂ hxy₁ } },
+  { exact hbc },
+  { exact hbc },
   { generalize hb : (inl x₂ : X ⊕ Y) = b,
     rw hb at hbc,
-    induction hbc with x₃ y₂ hxy₃,
-    { injection hb,
-      subst x₃,
-      exact rel.lr (h₁ _ _ _ _ hxy₁ hxy₂ hxy₃) },
-    {  } }
-
+    induction hbc with _ _ hxy₃ _ _ _ _ _ _ x₃ y₂ hxy₃ hxy₄;
+    injection hb with hb; subst hb; constructor; try {assumption},
+    { exact hR hxy₁ hxy₂ hxy₃ },
+    { exact hR hxy₄ hxy₃ hxy₂ } },
+  { generalize hb : (inr y₂ : X ⊕ Y) = b,
+    rw hb at hbc,
+    induction hbc with _ _ _ _ _ hxy₃ _ _ _ _ _ _ _ _ hxy₃
+      _ hxy₃ hxy₄;
+    injection hb with hb; subst hb; constructor; try {assumption},
+    { exact hR hxy₃ hxy₂ hxy₁ },
+    { exact hR hxy₁ (hR hxy₃ hxy₂ hxy₁) hxy₄ } } 
 end
 
-#print eqv_gen
+def rel_setoid (hR : ∀ x₁ x₂ y₁ y₂, R x₁ y₁ → R x₂ y₁ → R x₂ y₂ → R x₁ y₂) :
+  setoid (X ⊕ Y) :=
+{ r := rel R,
+  iseqv := ⟨rel_refl _, @rel_symm _ _ _, @rel_trans _ _ _ hR⟩ }
 
-example 
-  (hX : is_equiv _ (λ x₁ x₂, R x₁ = R x₂))
-  (hY : is_equiv _ (λ y₁ y₂, swap R y₁ = swap R y₂)) :
+example {X Y : Type} {R : X → Y → Prop} : 
+  (∀ x₁ x₂ y₁ y₂, R x₁ y₁ → R x₂ y₁ → R x₂ y₂ → R x₁ y₂) ↔
   ∃ (Z : Type) (f₁ : X → Z) (f₂ : Y → Z), (∀ x y, R x y ↔ f₁ x = f₂ y) :=
 begin
-  refine ⟨quotient (eqv_gen.setoid (rel R)), 
-    quotient.mk' ∘ inl, quotient.mk' ∘ inr, _⟩,
-  intros x y,
-  simp only [quotient.eq'],
   split,
-  { intro h,
-    refine eqv_gen.rel _ _ _,
-    exact ⟨x, y, rfl, rfl, h⟩ },
-  { show eqv_gen (rel R) (inl x) (inr y) → _,
-    intro h,
-    generalize ha : (inl x : X ⊕ Y) = a,
-    generalize hb : (inr y : X ⊕ Y) = b,
-    rw [ha, hb] at h,
-    induction h with a b hab h _ _ _ _,
-    { rcases hab with ⟨hab_w, hab_h_w, rfl, rfl, hab_h_h_right_right⟩,
-      simp * at * },
-    { subst h,
-      simp * at * },
-    { substs ha hb,
-      simp * at *, }
-     }
-
+  { intro hR,
+    refine ⟨quotient (rel_setoid R hR), 
+      quotient.mk' ∘ inl, quotient.mk' ∘ inr, _⟩,
+    intros x y,
+    simp only [quotient.eq'],
+    split,
+    { exact rel.lr},
+    { generalize ha : (inl x : X ⊕ Y) = a,
+      generalize hb : (inr y : X ⊕ Y) = b,
+      intro h,
+      induction h; simp * at * } },
+  { rintros ⟨Z, f₁, f₂, h⟩,
+    simp only [h], cc }
 end
 
 end
