@@ -77,6 +77,10 @@ def rel_setoid (hR : ∀ x₁ x₂ y₁ y₂, R x₁ y₁ → R x₂ y₁ → R 
 def square {A B : Type} (R : A → B → Prop) : Prop :=
 ∀ x₁ x₂ y₁ y₂, R x₁ y₁ → R x₂ y₁ → R x₂ y₂ → R x₁ y₂
 
+inductive square_closure {A B : Type} (R : A → B → Prop) : A → B → Prop 
+| of_rel {a b} : R a b → square_closure a b
+| closure {a₁ a₂ b₁ b₂} : square_closure a₁ b₁ → square_closure a₁ b₂ → 
+  square_closure a₂ b₁ → square_closure a₂ b₂ 
 
 example {X Y : Type} {R : X → Y → Prop} : 
   (∀ x₁ x₂ y₁ y₂, R x₁ y₁ → R x₂ y₁ → R x₂ y₂ → R x₁ y₂) ↔
@@ -96,7 +100,7 @@ begin
 end
 
 example {X Y Z : Type} (f p : X → Y) (q g : Y → Z) : 
-  g ∘ p = q ∘ f ↔ ∃ b : Y → Y, p = b ∘ f ∧ q = g ∘ b :=
+  g ∘ p = q ∘ f ↔ square_closure (∃ b : Y → Y, p = b ∘ f ∧ q = g ∘ b) :=
 begin
   split,
   { intro h,
@@ -139,7 +143,8 @@ begin
 end
 
 example {X Y Z : Type} (f : X → Y) (g : Y → Z) (a : X → X) (c : Z → Z)  : 
-  g ∘ f ∘ a = c ∘ g ∘ f ↔ ∃ b, f ∘ a = b ∘ f ∧ g ∘ b = c ∘ g :=
+  g ∘ f ∘ a = c ∘ g ∘ f ↔ (λ (a : X → X) (c : Z → Z), 
+    ∃ b, f ∘ a = b ∘ f ∧ g ∘ b = c ∘ g) a c :=
 begin
   split,
   { intro h,
@@ -153,7 +158,7 @@ begin
       exact (this.2 x rfl), 
       simp [P, function.funext_iff, *] at *,
       rw h, simp,
-      have hg : injective g := sorry,
+      have hf : surjective f := sorry,
       assume x' hx',
       apply hg,
       rw h, rw ← hx',
@@ -161,7 +166,6 @@ begin
 
 
 end
-
 
 example {A A' : Type} {B : A → Type} {B' : A' → Type} (Ra : A → A' → Prop)
   (hRa : square Ra) 
@@ -175,5 +179,152 @@ begin
   intros h₁ h₂ h₃ a a' h,
   exact (Rb a a' h).2 _ _ _ _  (h₁ a a' h) (h₂ a a' h) (h₃ a a' h)
 end
+
+example {A₁ A₂ : Type} {B₁ : A₁ → Type} {B₂ : A₂ → Type} 
+  (Ra : Type) (f₁ : A₁ → Ra) (f₂ : A₂ → Ra)
+  (Rb : Π {a₁ : A₁} {a₂ : A₂} (h : f₁ a₁ = f₂ a₂), Type) 
+  (g₁ : Π {a₁ : A₁} {a₂ : A₂} (h : f₁ a₁ = f₂ a₂), B₁ a₁ → Rb h)
+  (g₂ : Π {a₁ : A₁} {a₂ : A₂} (h : f₁ a₁ = f₂ a₂), B₂ a₂ → Rb h) :
+  Σ' (R : Type) (i₁ : (Π a₁ : A₁, B₁ a₁) → R) (i₂ : (Π a₂ : A₂, B₂ a₂) → R),
+    ∀ (p₁ : (Π a₁ : A₁, B₁ a₁)) (p₂ : (Π a₂ : A₂, B₂ a₂)),
+      (∀ a₁ a₂ (h : f₁ a₁ = f₂ a₂), g₁ h (p₁ a₁) = g₂ h (p₂ a₂)) ↔
+    i₁ p₁ = i₂ p₂ :=
+⟨Π (a₁ : A₁) (a₂ : A₂) (h : f₁ a₁ = f₂ a₂), Rb h, 
+  λ p₁ a₁ a₂ h, g₁ h (p₁ a₁),
+  λ p₂ a₁ a₂ h, g₂ h (p₂ a₂), 
+  by simp [function.funext_iff]⟩
+
+section funny_cat
+
+structure edge : Type 1 :=
+( op_type : Type )
+( type : Type )
+( R : op_type → type → Prop )
+
+namespace edge
+
+structure hom (X Y : edge) : Type :=
+( op_hom : Y.op_type → X.op_type )
+( hom : X.type → Y.type )
+( commutes : ∀ (x : X.type) (y : Y.op_type), X.R (op_hom y) x ↔ Y.R y (hom x))
+
+def id (X : edge) : hom X X :=
+{ op_hom := id,
+  hom := id,
+  commutes := λ _ _, iff.rfl }
+
+def comp {X Y Z : edge} (f : hom Y Z) (g : hom X Y) : hom X Z :=
+{ op_hom := g.op_hom ∘ f.op_hom,
+  hom := f.hom ∘ g.hom,
+  commutes := λ _, begin
+    simp [f.commutes, g.commutes],
+  end } 
+
+def pullback (E : edge) : Type := { x : E.op_type × E.type // E.R x.1 x.2 }
+
+def thing (X : Type) : Type :=
+Π (f : Π x : X, {l : list X // x ∈ l}) (x : X), {l : list (list X) // (f x).1 ∈ l}
+
+inductive list.rel_lift {A B : Type} (R : A → B → Prop) : list A → list B → Prop
+| nil : list.rel_lift [] []
+| cons : ∀ a b l₁ l₂, list.rel_lift l₁ l₂ → R a b → list.rel_lift (a :: l₁) (b::l₂)
+
+def thing' (E : edge) : Type := 
+Π (f : Π x : E.type, { l : list E.op_type // ∃ (y : E.op_type) (h : E.R y x), y ∈ l }) (x : E.op_type),
+  {l : list (list E.type) // ∃ (y : E.type) (h : E.R x y) 
+    (l' : list E.type) (h : list.rel_lift E.R (f y).1 l'), l' ∈ l  }
+
+def thing₂ (E : edge) : Type :=
+Π (f : Π x : E.type, Σ' (y : E.op_type) (h : E.R y x), { l : list E.op_type // y ∈ l }) (x : E.op_type),
+  Σ' (y : E.type) (h : E.R x y), {l : list (list E.type) // (h : list.rel_lift E.R (f y).1 l'), l' ∈ l  }
+
+def thing'_map {X Y : edge} (f : hom X Y) (t : thing' X) : thing' Y :=
+λ g y, begin
+  dsimp only [thing', thing] at t,
+  let g' : Π (x : X.type), {l : list X.op_type // ∃ (y : X.op_type) (h : X.R y x ), y ∈ l },
+    from λ x, ⟨(g (f.hom x)).1.map f.op_hom, begin
+      rcases (g (f.hom x)).2 with ⟨y, hy₁, hy₂⟩,
+      existsi f.op_hom y,
+      rw [f.commutes],
+      use hy₁,
+      rw [list.mem_map],
+      use y,
+      simpa using hy₂,
+    end⟩,
+  let l := t g' (f.op_hom y),
+  fsplit,
+  exact l.1.map (list.map f.hom),
+  rcases l.2 with ⟨x, hxy, l', hl', hll⟩,
+  use f.hom x,
+  rw ← f.commutes,
+  use hxy,
+  use l'.map f.hom,
+  split,
+  intros,
+  clear_except hl' ,
+  dsimp [g'] at hl',
+  simp,
+  generalize hk : (↑(g (f.hom x)) : list _) = k,
+  rw hk at hl',
+  clear_except hl',
+  generalize hm : list.map f.op_hom k = m,
+  rw hm at hl', 
+  induction hl' generalizing k,
+  { simp * at *, constructor },
+  { cases k,
+    simp * at *,
+    simp at hm,
+    cases hm with hm1 hm2,
+    subst hm1,
+    constructor,
+    apply hl'_ih,
+    assumption,
+    rwa ← f.commutes },
+  simp,
+  use l',
+  simp * at *
+
+end
+
+@[simp] lemma list.map_id {A : Type} : list.map (_root_.id : A → A) = _root_.id := 
+by funext; simp
+
+lemma list.map_comp {A B C : Type} (f : A → B) (g : B → C) : 
+  list.map (g ∘ f) = list.map g ∘ list.map f := 
+by funext; simp
+
+lemma thing'_map_id (X : edge) : thing'_map (edge.id X) = _root_.id :=
+begin
+  cases X, funext, simp [thing'_map],
+  refine subtype.ext _,
+  dsimp [id] at *,
+  rw [list.map_id, list.map_id],
+  simp,
+  congr,
+  simp,
+  simp,
+  simp,
+  simp,
+  simp,
+end
+
+lemma thing'_map_comp  (X Y Z : edge) (f : hom X Y) (g : hom Y Z) : 
+  thing'_map (comp g f) =  thing'_map g ∘ thing'_map f :=
+begin
+  cases X, cases Y, cases Z, cases f, cases g, funext, simp [thing'_map, comp],
+  congr,
+  simp,
+  simp,
+  simp,
+  simp,
+  simp,
+
+
+end
+
+
+end edge
+
+end funny_cat
 
 end
