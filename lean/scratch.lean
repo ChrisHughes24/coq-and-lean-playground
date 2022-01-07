@@ -1,14 +1,19 @@
 import tactic
 
-def R {A B X Y : Type}
-  (a : X → A)
-  (b : Y → A)
-  (c : X → B)
-  (d : Y → B) : X → Y → Prop :=
-  λ x y, a x = b y → c x = d y
+def F : Type → Type :=
+λ X, (X → X × X) → X → X
 
-def F : Type → Type → Type :=
+def F2 : Type → Type → Type :=
 λ X Y, (Y → X × X) → X → Y
+
+def g₁ {X Y : Type} (f : X → Y) : F2 X X → F2 X Y := sorry
+
+def g₂ {X Y : Type} (f : X → Y) : F2 Y Y → F2 X Y := sorry
+
+def R {X Y : Type} (f : X → Y) : F2 X X → F2 Y Y → Prop :=
+λ x y, g₁ f x = g₂ f y
+
+
 
 def map1 {X Y : Type} (Z : Type) (f : X → Y) : F Y Z → F X Z :=
 λ g h x, g (λ z, (h z).map f f) (f x)
@@ -99,74 +104,6 @@ begin
     simp only [h], cc },
 end
 
-example {X Y Z : Type} (f p : X → Y) (q g : Y → Z) : 
-  g ∘ p = q ∘ f ↔ square_closure (∃ b : Y → Y, p = b ∘ f ∧ q = g ∘ b) :=
-begin
-  split,
-  { intro h,
-    let P : Y → Y → Prop := (λ y y', q y = g y' ∧ ∀ x, f x = y → y' = p x),
-    have h : ∀ y, ∃ y', P y y',
-    { intro y, dsimp [P], },
-    { refine ⟨λ y : Y, @classical.epsilon _ ⟨y⟩ (P y), _⟩,
-      split,
-      { funext,
-        dsimp,
-        have := @classical.epsilon_spec _ (P (f x)) (h (f x)),
-        exact (this.2 x rfl).symm },
-      { funext y,
-        dsimp,
-        have := @classical.epsilon_spec _ (P y) (h y),
-        exact this.1 } },
-    { push_neg at h, }
-     },
-  { rintro ⟨b, rfl, rfl⟩,
-    refl }
-end 
-
-def funny_comp {W X Y Z : Type} (r₁ : W → X → Prop) (r₂ : X → Y → Prop) (r₃ : Y → Z → Prop) : W → Z → Prop := 
-λ w z, ∃ x y, r₂ x y ∧ r₁ w x ∧ r₃ y z
-
-lemma square_funny_comp {W X Y Z : Type} (r₁ : W → X → Prop) (r₂ : X → Y → Prop) (r₃ : Y → Z → Prop) :
-  square r₁ → square r₂ → square r₃ → square (funny_comp r₁ r₂ r₃) :=
-begin
-  dunfold square funny_comp,
-  rintros h₁ h₂ h₃ w₁ w₂ z₁ z₂ ⟨x₁, y₁, hxy₁⟩ ⟨x₂, y₂, hxy₂⟩ ⟨x₃, y₃, hxy₃⟩,
-  use [x₁, y₃],
-
-end
-
-example {X Y Z : Type} (f : X → Y) (g : Y → Z) : 
-  square (λ (a : X → X) (c : Z → Z), 
-    ∃ b, f ∘ a = b ∘ f ∧ g ∘ b = c ∘ g ) :=
-begin
-  rintro a₁ a₂ c₁ c₂ ⟨b₁, hab₁, hbc₁⟩ ⟨b₂, hab₂, hbc₂⟩ ⟨b₃, hab₃,hbc₃⟩,
-end
-
-example {X Y Z : Type} (f : X → Y) (g : Y → Z) (a : X → X) (c : Z → Z)  : 
-  g ∘ f ∘ a = c ∘ g ∘ f ↔ (λ (a : X → X) (c : Z → Z), 
-    ∃ b, f ∘ a = b ∘ f ∧ g ∘ b = c ∘ g) a c :=
-begin
-  split,
-  { intro h,
-    let P : Y → Y → Prop := (λ y y', g y' = c (g y) ∧ ∀ x, y = f x → f (a x) = y'),
-    refine ⟨λ y : Y, @classical.epsilon _ ⟨y⟩ (P y), _⟩,
-    split,
-    funext,
-    { dsimp,
-      let y : Y := sorry,
-      have := @classical.epsilon_spec _ (P (f x)) ⟨f (a x), _⟩,
-      exact (this.2 x rfl), 
-      simp [P, function.funext_iff, *] at *,
-      rw h, simp,
-      have hf : surjective f := sorry,
-      assume x' hx',
-      apply hg,
-      rw h, rw ← hx',
-       } }
-
-
-end
-
 example {A A' : Type} {B : A → Type} {B' : A' → Type} (Ra : A → A' → Prop)
   (hRa : square Ra) 
   (Rb : Π (a₁ : A) (a₂ : A') (h : Ra a₁ a₂), 
@@ -189,9 +126,9 @@ example {A₁ A₂ : Type} {B₁ : A₁ → Type} {B₂ : A₂ → Type}
     ∀ (p₁ : (Π a₁ : A₁, B₁ a₁)) (p₂ : (Π a₂ : A₂, B₂ a₂)),
       (∀ a₁ a₂ (h : f₁ a₁ = f₂ a₂), g₁ h (p₁ a₁) = g₂ h (p₂ a₂)) ↔
     i₁ p₁ = i₂ p₂ :=
-⟨Π (a₁ : A₁) (a₂ : A₂) (h : f₁ a₁ = f₂ a₂), Rb h, 
+⟨Π (a₁ : A₁) (a₂ : A₂) (h : f₁ a₁ = f₂ a₂), Rb h,
   λ p₁ a₁ a₂ h, g₁ h (p₁ a₁),
-  λ p₂ a₁ a₂ h, g₂ h (p₂ a₂), 
+  λ p₂ a₁ a₂ h, g₂ h (p₂ a₂),
   by simp [function.funext_iff]⟩
 
 section funny_cat
@@ -203,24 +140,65 @@ structure edge : Type 1 :=
 
 namespace edge
 
+def op (E : edge) : edge :=
+{ op_type := E.type,
+  type := E.op_type,
+  R := λ x y, E.R y x }
+
 structure hom (X Y : edge) : Type :=
 ( op_hom : Y.op_type → X.op_type )
 ( hom : X.type → Y.type )
-( commutes : ∀ (x : X.type) (y : Y.op_type), X.R (op_hom y) x ↔ Y.R y (hom x))
+( adj : ∀ (x : X.type) (y : Y.op_type), X.R (op_hom y) x ↔ Y.R y (hom x) )
+
+def functional (E : edge) : Prop :=
+∃ f : E.op_type → E.type, ∀ x y, E.R x y ↔ f x = y
+
+example (E : edge) (hf : functional E) (F : edge) (h : hom E F) : 
+  false  :=
+begin
+  cases E, cases hf, cases F, cases h,
+  dsimp at *,
+  simp [hf_h] at *,
+
+end
 
 def id (X : edge) : hom X X :=
 { op_hom := id,
   hom := id,
-  commutes := λ _ _, iff.rfl }
+  adj := λ _ _, iff.rfl }
 
 def comp {X Y Z : edge} (f : hom Y Z) (g : hom X Y) : hom X Z :=
 { op_hom := g.op_hom ∘ f.op_hom,
   hom := f.hom ∘ g.hom,
-  commutes := λ _, begin
-    simp [f.commutes, g.commutes],
-  end } 
+  adj := λ x y, by simp [f.adj, g.adj] }
 
 def pullback (E : edge) : Type := { x : E.op_type × E.type // E.R x.1 x.2 }
+
+def id_edge (X : Type) : edge :=
+{ op_type := X,
+  type := X,
+  R := eq }
+
+def of_fun {X Y : Type} (f : X → Y) : edge :=
+{ op_type := X,
+  type := Y,
+  R := λ x y, f x = y }
+
+def id_to_of_fun {X Y : Type} (f : X → Y) : hom (id_edge Y) (of_fun f) :=
+{ op_hom := f,
+  hom := _root_.id,
+  adj := begin
+    intros, refl,
+  end }
+
+example {X₁ X₂ Y₁ Y₂ : Type} (f₁ : X₁ → Y₁) (f₂ : X₂ → Y₂) (o : X₂ → X₁) 
+  (h : Y₁ → Y₂) : hom ⟨X₁, Y₁, λ x y, f₁ x = y⟩ ⟨X₂, Y₂, λ x y, f₂ x = y⟩ :=
+{ op_hom := o,
+  hom := h,
+  adj := begin
+    dsimp,
+    
+  end }
 
 def thing (X : Type) : Type :=
 Π (f : Π x : X, {l : list X // x ∈ l}) (x : X), {l : list (list X) // (f x).1 ∈ l}
@@ -234,18 +212,14 @@ def thing' (E : edge) : Type :=
   {l : list (list E.type) // ∃ (y : E.type) (h : E.R x y) 
     (l' : list E.type) (h : list.rel_lift E.R (f y).1 l'), l' ∈ l  }
 
-def thing₂ (E : edge) : Type :=
-Π (f : Π x : E.type, Σ' (y : E.op_type) (h : E.R y x), { l : list E.op_type // y ∈ l }) (x : E.op_type),
-  Σ' (y : E.type) (h : E.R x y), {l : list (list E.type) // (h : list.rel_lift E.R (f y).1 l'), l' ∈ l  }
-
 def thing'_map {X Y : edge} (f : hom X Y) (t : thing' X) : thing' Y :=
 λ g y, begin
   dsimp only [thing', thing] at t,
-  let g' : Π (x : X.type), {l : list X.op_type // ∃ (y : X.op_type) (h : X.R y x ), y ∈ l },
+  let g' : Π (x : X.type), { l : list X.op_type // ∃ (y : X.op_type) (h : X.R y x ), y ∈ l },
     from λ x, ⟨(g (f.hom x)).1.map f.op_hom, begin
       rcases (g (f.hom x)).2 with ⟨y, hy₁, hy₂⟩,
       existsi f.op_hom y,
-      rw [f.commutes],
+      rw [f.adj],
       use hy₁,
       rw [list.mem_map],
       use y,
@@ -256,7 +230,7 @@ def thing'_map {X Y : edge} (f : hom X Y) (t : thing' X) : thing' Y :=
   exact l.1.map (list.map f.hom),
   rcases l.2 with ⟨x, hxy, l', hl', hll⟩,
   use f.hom x,
-  rw ← f.commutes,
+  rw ← f.adj,
   use hxy,
   use l'.map f.hom,
   split,
@@ -279,11 +253,10 @@ def thing'_map {X Y : edge} (f : hom X Y) (t : thing' X) : thing' Y :=
     constructor,
     apply hl'_ih,
     assumption,
-    rwa ← f.commutes },
+    rwa ← f.adj },
   simp,
   use l',
   simp * at *
-
 end
 
 @[simp] lemma list.map_id {A : Type} : list.map (_root_.id : A → A) = _root_.id := 
@@ -318,8 +291,66 @@ begin
   simp,
   simp,
   simp,
+end
 
+def id2 (E : edge) : Type := E.type
 
+def id2_map {E₁ E₂ : edge} (f : hom E₁ E₂) : id2 E₁ → id2 E₂ := f.hom
+
+lemma id2_map_id (E : edge) : id2_map (id E) = _root_.id := rfl
+
+lemma id2_map_comp (E₁ E₂ E₃ : edge) (f : hom E₁ E₂) (g : hom E₂ E₃) : 
+  id2_map (comp g f) = id2_map g ∘ id2_map f := rfl
+
+def set2 (E : edge) : Type := E.op_type → Prop
+
+def set2_map {E₁ E₂ : edge} (f : hom E₁ E₂) : set2 E₁ → set2 E₂ := (∘ f.op_hom)
+
+lemma set2_map_id (E : edge) : set2_map (id E) = _root_.id := rfl
+
+lemma set2_map_comp (E₁ E₂ E₃ : edge) (f : hom E₁ E₂) (g : hom E₂ E₃) : 
+  set2_map (comp g f) = set2_map g ∘ set2_map f := rfl
+
+structure group2 (E : edge) : Type :=
+( one : E.type )
+( inv : E.op_type → E.type )
+( mul : E.op_type → E.op_type → E.type )
+( one_mul : ∀ (x : E.op_type) (one' : E.op_type) (h1 : E.R one' one), mul one' x = one  )
+(inv_mul : ∀ (x : E.op_type), ∀ (inv_y : E.op_type) (hi : E.R inv_y (inv x)), mul inv_y x = one )
+( mul_assoc : ∀ (x y z : E.op_type),
+    ∀ (mul_y_z : E.op_type) (mul_x_y : E.op_type) (hyz : E.R mul_y_z (mul y z))
+      (hxy : E.R mul_x_y (mul x y)),
+    mul x mul_y_z = mul mul_x_y z )
+
+def group2_map {X Y : edge} (f : hom X Y) (G : group2 X) : group2 Y :=
+{ one := f.hom G.one,
+  inv := λ x, f.hom (G.inv (f.op_hom x)),
+  mul := λ x y, f.hom (G.mul (f.op_hom x) (f.op_hom y)),
+  one_mul := λ x one' h1,
+    by rw G.one_mul (f.op_hom x) (f.op_hom one') ((f.adj _ _).2 h1),
+  inv_mul := λ x y hxy, 
+    by rw (G.inv_mul (f.op_hom x) (f.op_hom y)) ((f.adj _ _).2 hxy),
+  mul_assoc := λ x y z mul_y_z mul_x_y h1 h2, begin 
+    rw G.mul_assoc,
+    apply (f.adj _ _).2,
+    assumption,
+    apply (f.adj _ _).2,
+    assumption
+  end, }
+
+lemma group2_map_id {X : edge} : group2_map (id X) = _root_.id :=
+begin
+  funext,
+  cases G,
+  refl,
+end
+
+lemma group2_map_comp {X Y Z : edge} (f : hom X Y) (g : hom Y Z ) : 
+   group2_map (comp g f) = group2_map g ∘ group2_map f :=
+begin
+  funext,
+  cases G,
+  refl,
 end
 
 
@@ -328,3 +359,17 @@ end edge
 end funny_cat
 
 end
+
+def preimage (F₁ F₂ G₁ G₂ : Type → Type) 
+  (R : Π {A₁ A₂ : Type} (R : A₁ → A₂ → Type), G₁ A₁ → G₂ A₂ → Type)
+  ( hom₁ : Π {A : Type}, F₁ A → G₁ A)
+  ( hom₂ : Π {A₁ A₂ : Type}, (F₂ A₁ → G₂ A₂) ) : 
+  Π {A₁ A₂ : Type} (Ra : A₁ → A₂ → Type), F₁ A₁ → F₂ A₂ → Type :=
+λ A₁ A₂ Ra a₁ a₂, R Ra (@hom₁ A₁ a₁) _
+
+def preimage (F₁ F₂ G₁ G₂ : Type → Type) 
+  (R : Π {A₁ A₂ : Type}, (A₁ → A₂ → Type) → G₁ A₁ → G₂ A₂ → Type)
+  (hom₁ : Π {A₁ A₂ : Type}, (A₁ → A₂) → (F₁ A₁ → G₁ A₂) )
+  (hom₂ : Π {A₁ A₂ : Type}, (A₁ → A₂) → (F₂ A₁ → G₂ A₂) ) : 
+  Π {A₁ A₂ : Type}, (A₁ → A₂ → Type) → F₁ A₁ → F₂ A₂ → Type :=
+λ A₁ A₂ Ra a₁ a₂, R Ra (hom₁ id a₁) _
