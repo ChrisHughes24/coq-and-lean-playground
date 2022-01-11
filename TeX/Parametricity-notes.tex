@@ -171,7 +171,16 @@ e.g. The category $\Sigma X : Type, X \times (X \to bool)$ has pullbacks but not
 \subsection{How to put category structure on each type?}
 
 This question is hardest to answer on types where $Type$ or $Prop$ appears on the left of a Pi,
-e.g. in the Type $Type\rightarrow Type$.
+e.g. in the Type $Type\rightarrow Type$. One natural suggestion is to say that a morphism between
+$F$ and $G$ has type $\Pi X Y, (X \rightarrow Y) \rightarrow (F(X) \rightarrow G(Y))$. The problem 
+with this definition is that the morphisms are not composable unless $F$ and $G$ are functors and 
+there is no identity on $F$ unless $F$ is a functor. The definition $\Pi X, F(X) \rightarrow G(X)$,
+seems to make more sense and these two definitions are equivalent (by parametricity) if $F$ and
+$G$ are functors. Possibly it is morally wrong to attempt to define a category structure on the whole of
+$Type \rightarrow Type$ and the category should just be defined on the functors.
+
+There are no real life examples of categories with $Type$ or $Prop$ appearing on the left of a 
+Pi anyway other than functor categories.
 
 \subsection{Find the a notion of morphism of a parametric category weaker than functor, but
   still having some structure on the map of relations}
