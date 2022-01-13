@@ -176,9 +176,10 @@ $F$ and $G$ has type $\Pi X Y, (X \rightarrow Y) \rightarrow (F(X) \rightarrow G
 with this definition is that the morphisms are not composable unless $F$ and $G$ are functors and 
 there is no identity on $F$ unless $F$ is a functor. The definition $\Pi X, F(X) \rightarrow G(X)$,
 seems to make more sense and these two definitions are equivalent (by parametricity) if $F$ and
-$G$ are functors. Possibly it is morally wrong to attempt to define a category structure on the whole of
-$Type \rightarrow Type$ and the category should just be defined on the functors.
+$G$ are functors.
 
+Possibly it is morally wrong to attempt to define a category structure on the whole of
+$Type \rightarrow Type$ and the category should just be defined on the functors. 
 There are no real life examples of categories with $Type$ or $Prop$ appearing on the left of a 
 Pi anyway other than functor categories.
 
@@ -200,21 +201,17 @@ $group G = group2(G, G, eq)$. It is not clear if this generalizes or if it is us
 \subsection{Generalizing representable functors}
 If $F : \mathcal{C} \rightarrow Type$ is a functor, then one way of defining a representation
 of that functor is that it is an initial object in the category $\Sigma X : \mathcal{C}, F(X)$.
-This definition has the advantage that $F$ need not be a functor.
+This definition has the advantage that $F$ need not be a functor. How do these generalized 
+universal properties work?
 
 Sometimes something has a universal property in one category and this means it is ``obvious'' that 
 it has some universal property in another category. For example, it is ``obvious'' that the initial
 object in the category of pointed groups is also the free group on one generator. Can parametricity be used 
 to generate all the equivalent UMPs of an object in different categories?
 
-Consider the example of $\mathbb{N}$. This is a representation of the function 
-$X \mapsto X \times (X \rightarrow X)$ 
-by the above definition. It is also true that is the category of types, for any type $X$, $\text{Hom}(
-\mathbb{N}, X) \cong X \times \text{Hom}(\mathbb{N}, \text{Hom}(X, X))$, which is a sort of universal property,
-but a bit different because $\text{Hom}(\mathbb{N}, -)$ appears on both sides. Can this idea be generalized
-to categories other than Type?
-
 \subsection{What does parametricity have to do with recursion principles for inductive types?}
+
+The arity one translation of 
 
 \bibliography{references}
 
