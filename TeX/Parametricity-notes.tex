@@ -183,6 +183,13 @@ $Type \rightarrow Type$ and the category should just be defined on the functors.
 There are no real life examples of categories with $Type$ or $Prop$ appearing on the left of a 
 Pi anyway other than functor categories.
 
+Potentially the parametricity translation could be changed as well when computing the 
+"parametric category" structure of a Type in a similar way to the way arrows are computed.
+e.g. $Type \rightarrow Type$ could be translated as 
+$\Pi X, F(X) \rightarrow G(X) \rightarrow Type$ when $F,G : Type \rightarrow Type$. 
+In this case there would no longer be any content to the parametricity theorem, but
+you wouldn't use this translation all the time.
+
 \subsection{Find the a notion of morphism of a parametric category weaker than functor, but
   still having some structure on the map of relations}
 
@@ -209,9 +216,16 @@ it has some universal property in another category. For example, it is ``obvious
 object in the category of pointed groups is also the free group on one generator. Can parametricity be used 
 to generate all the equivalent UMPs of an object in different categories?
 
-\subsection{What does parametricity have to do with recursion principles for inductive types?}
+\subsection {What does parametricity have to do with recursion principles for inductive types?}
 
-The arity one translation of 
+The arity one translation of the type $\Sigma X : Type, X \times (X \rightarrow X)$ is 
+\begin{lstlisting}
+  sigma (X : Type) (X_P : X -> Type) (x : X) (h0 : X_P x) 
+    (f : X -> X), forall H : X, X_P H -> X_P (f H)
+\end{lstlisting}
+
+
+
 
 \bibliography{references}
 
