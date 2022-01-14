@@ -170,6 +170,12 @@ e.g. The category $\Sigma X : Type, X \times (X \to bool)$ has pullbacks but not
 
 \subsection{How to put category structure on each type?}
 
+In order to do Sigma types it is necessary to define something a little more general than a category.
+For example a morphism of groups $\Sigma G : Type, group(G)$ should be a morphism of types, and a ``morphism''
+on the corresponding groups structure. i.e. if $G, H : Type$ and $g : group(G)$ and $h : group(H)$,
+then a morphism is a morphism between $G$ and $H$ and a morphism between $g$ and $h$, but $g$ and $h$ have 
+different types, so it does not make sense to ask what a morphism is without a more general notion of category.
+
 This question is hardest to answer on types where $Type$ or $Prop$ appears on the left of a Pi,
 e.g. in the Type $Type\rightarrow Type$. One natural suggestion is to say that a morphism between
 $F$ and $G$ has type $\Pi X Y, (X \rightarrow Y) \rightarrow (F(X) \rightarrow G(Y))$. The problem 
@@ -189,6 +195,19 @@ e.g. $Type \rightarrow Type$ could be translated as
 $\Pi X, F(X) \rightarrow G(X) \rightarrow Type$ when $F,G : Type \rightarrow Type$. 
 In this case there would no longer be any content to the parametricity theorem, but
 you wouldn't use this translation all the time.
+
+
+
+\subsection{What are the applications of all this?}
+
+Automatically proving naturality of things. But where does this come up, there are probably many examples
+of mathematical arguments that are essentially naturality even though you would never use the word naturality
+when talking about it.
+
+Automatically prove functorality.
+
+Arguments of the form, it suffices to prove this lemma on a free object. 
+This is kind of what the ring tactic is doing.
 
 \subsection{Find the a notion of morphism of a parametric category weaker than functor, but
   still having some structure on the map of relations}
@@ -223,6 +242,7 @@ The arity one translation of the type $\Sigma X : Type, X \times (X \rightarrow 
   sigma (X : Type) (X_P : X -> Type) (x : X) (h0 : X_P x) 
     (f : X -> X), forall H : X, X_P H -> X_P (f H)
 \end{lstlisting}
+
 
 
 
