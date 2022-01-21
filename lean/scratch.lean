@@ -1,19 +1,7 @@
 import tactic
 
-def F : Type → Type :=
-λ X, (X → X × X) → X → X
-
-def F2 : Type → Type → Type :=
+def F : Type → Type → Type :=
 λ X Y, (Y → X × X) → X → Y
-
-def g₁ {X Y : Type} (f : X → Y) : F2 X X → F2 X Y := sorry
-
-def g₂ {X Y : Type} (f : X → Y) : F2 Y Y → F2 X Y := sorry
-
-def R {X Y : Type} (f : X → Y) : F2 X X → F2 Y Y → Prop :=
-λ x y, g₁ f x = g₂ f y
-
-
 
 def map1 {X Y : Type} (Z : Type) (f : X → Y) : F Y Z → F X Z :=
 λ g h x, g (λ z, (h z).map f f) (f x)
@@ -117,6 +105,14 @@ begin
   exact (Rb a a' h).2 _ _ _ _  (h₁ a a' h) (h₂ a a' h) (h₃ a a' h)
 end
 
+example {X₁ X₂ : Type} (R : X₁ → X₂ → Prop) (h : square R) 
+  (F : Type → Type) :
+  square (λ (f : X₁ → X₁) (g : X₂ → X₂), ∀ x₁ x₂, R x₁ x₂ → R (f x₁) (g x₂)) :=
+begin
+  intros f₁ f₂ g₁ g₂ h₁ h₂ h₃ x₁ x₂ hx,
+  exact h _ _ _ _ (h₁ _ _ hx) (h₂ _ _ hx) (h₃ _ _ hx),
+end
+
 example {A₁ A₂ : Type} {B₁ : A₁ → Type} {B₂ : A₂ → Type} 
   (Ra : Type) (f₁ : A₁ → Ra) (f₂ : A₂ → Ra)
   (Rb : Π {a₁ : A₁} {a₂ : A₂} (h : f₁ a₁ = f₂ a₂), Type) 
@@ -130,11 +126,16 @@ example {A₁ A₂ : Type} {B₁ : A₁ → Type} {B₂ : A₂ → Type}
   λ p₁ a₁ a₂ h, g₁ h (p₁ a₁),
   λ p₂ a₁ a₂ h, g₂ h (p₂ a₂),
   by simp [function.funext_iff]⟩
-#print nat.rec
-section funny_cat
 
-
-end funny_cat
+example {F G : Type → Type} 
+  (n : Π {X Y : Type}, (X → Y) → (F X → G Y))
+  (fmap : Π {X Y : Type}, (X → Y) → (F X → F Y))
+  (hn : ∀ {X Y Z : Type} (g : Y → Z) (f : X → Y), n (g ∘ f) = n g ∘ fmap f) :
+  ∀ {X Y : Type} (f : X → Y), n f = n id ∘ (fmap f) :=
+begin
+  intros,
+  exact hn id f
+end
 
 end
 
@@ -195,14 +196,18 @@ begin
   simp [comp],
 
 end 
- 
-def identity (F : Type → Type) : cyril_hom F F :=
-λ _ _ _, id
 
-def chris_hom (F G : (Type → Type) → Type) : Type 1 :=
-Π {A B : Type → Type}, (f : )
+open function
 
-example chris_comp (F G : (Type → Type) → Type) 
-  (f : Π ): 
+example {X Y : Type} (f : X → Y) (hf : surjective f) : 
+  ∃ g : ((X → X) → (Y → Y)), (∀ a b, g a = b ↔ ∀ x y, f x = y → f (a x) = b y) :=
+⟨λ a y, f (a (surj_inv hf y)), begin 
+intros a b,
+simp only [function.funext_iff],
+split,
+rintros h x y rfl,
+rw ← h, admit,
+intros h y,
+exact h (surj_inv hf y) y (surj_inv_eq _ _),
 
-example : Π (X : Type), (X → X) → (X → X) := sorry
+ end⟩

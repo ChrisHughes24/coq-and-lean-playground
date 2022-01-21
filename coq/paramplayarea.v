@@ -4,7 +4,9 @@ Inductive nat : Set :=
 | zero : nat
 | succ : nat -> nat.
 
-Definition T := forall (F : (Type -> Type) -> Type) (X : Type -> Type), F X -> F X.
+Inductive T (X Y : Type) : Type := 
+| Tmk (f : (Y -> Type) -> (X -> Type)) (hf : forall s t, (forall y, s y -> t y) -> forall x, f s x -> f t x) : T X Y.
+
 
 Inductive S : Type :=
 | mk : forall (A : Type) (R : A -> A -> Type), (forall a : A, R a a) -> S.
@@ -18,23 +20,20 @@ Definition O :=
   forall (X : Type), ((X -> False) -> X) -> X.
 
 Inductive N : Type :=
-Nmk : forall (X : Type), X -> N.
-
-Inductive M : Type :=
-| Mmk (X : Type) (f : (X -> X) -> X) : M.
+Nmk (X : Type) (x : X) (f : X -> X) : N.
 
 Definition J (X : Type) : Type := (X -> bool -> X) -> X.
 
-Definition I (F G : Type -> Type) := 
-  forall X Y : Type, (X -> Y) -> (F X -> G Y).
+Definition I (F G : Type -> Type) (Y : Type) := 
+  forall X, (X -> Y) -> (F X -> G Y).
 
 Parametricity eq as eq_param arity 1.
 Parametricity eq as eq_param2 arity 2.
 Parametricity bool as boolp arity 2.
-Parametricity N as N_param arity 2.
-Parametricity I as I_param arity 2.
+Parametricity N as N_param arity 1.
 Parametricity T as T_param arity 2.
-Print I_param.
+Print T_param.
+Print M_param.
 Print K_param.
 Parametricity J as J_param arity 2.
 Print K_param. 
