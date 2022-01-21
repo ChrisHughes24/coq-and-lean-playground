@@ -12,11 +12,11 @@ structure suitable (F : Type → Type)
 (desc : Π {X : Type} (R : setoid X) (s) (h : ρ R.r s s),
   ∃! (s' : F (quotient R)), ρ (λ (x : X) (y : quotient R), quotient.mk x = y) s s')
 
-example (F ρ) (hsuit : suitable F ρ) {X Y : Type} (R : X → Y → Prop) (h : square R) :
-  square (ρ R) :=
+example (F ρ) (hsuit : suitable F ρ) {X Y : Type} 
+  (R : X → Y → Prop) (h : square R) : square (ρ R) :=
 begin
   intros x₁ x₂ y₁ y₂ h₁ h₂ h₃,
-  have := hsuit.trans R (swap R) _ _ _ h₁ (hsuit.symm _ _ _ h₂), 
+  have := hsuit.trans R (swap R) _ _ _ h₁ (hsuit.symm _ _ _ h₂),
   have := hsuit.trans _ _ _ _ _ this h₃,
   convert this,
   ext x y,
@@ -61,3 +61,24 @@ example : suitable (λ X : Type, X → X) (λ X Y R f g, ∀ x y, R x y → R (f
         rw ← h x _ rfl,
         refl } 
     end⟩ }
+
+example {X Y : Type} (R : X → Y → Prop) (h : square R) : 
+  square (λ (f : (X → X) → X) (g : (Y → Y) → Y), ∀ (a : X → X) (b : Y → Y),
+    (∀ x y, R x y → R (a x) (b y)) → R (f a) (g b)) :=
+λ f₁ f₂ g₁ g₂ h₁ h₂ h₃ a b hab, begin
+  dsimp at *,
+  apply h,
+  apply h₁,
+  apply hab,
+  apply h₂,
+  apply hab,
+  apply h₃, 
+  apply hab
+end
+
+example : suitable (λ X, (X → X) → X) 
+  (λ X Y R f g, ∀ (a : X → X) (b : Y → Y), (∀ x y, R x y → R (a x) (b y)) → R (f a) (g b)) :=
+{ symm := λ X Y R f g h₁ a b h₂, h₁ _ _ (λ x y, h₂ y x),
+  trans := λ X Y Z R R' f g i h₁ h₂ a b h₃, begin
+    dsimp at *,
+  end }
