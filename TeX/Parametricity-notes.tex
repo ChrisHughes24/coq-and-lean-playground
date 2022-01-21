@@ -170,13 +170,17 @@ e.g. The category $\Sigma X : Type, X \times (X \to bool)$ has pullbacks but not
 
 \subsection{How to put category structure on each type?}
 
+
+
 In order to do Sigma types it is necessary to define something a little more general than a category.
 For example a morphism of groups $\Sigma G : Type, group(G)$ should be a morphism of types, and a ``morphism''
 on the corresponding groups structure. i.e. if $G, H : Type$ and $g : group(G)$ and $h : group(H)$,
 then a morphism is a morphism between $G$ and $H$ and a morphism between $g$ and $h$, but $g$ and $h$ have 
 different types, so it does not make sense to ask what a morphism is without a more general notion of category.
 
-This question is hardest to answer on types where $Type$ or $Prop$ appears on the left of a Pi,
+\subsubsection{Case 1 : Type -> Type}
+
+This question is hard to answer on types where $Type$ or $Prop$ appears on the left of a Pi,
 e.g. in the Type $Type\rightarrow Type$. One natural suggestion is to say that a morphism between
 $F$ and $G$ has type $\Pi X Y, (X \rightarrow Y) \rightarrow (F(X) \rightarrow G(Y))$. The problem 
 with this definition is that the morphisms are not composable unless $F$ and $G$ are functors and 
@@ -195,6 +199,33 @@ e.g. $Type \rightarrow Type$ could be translated as
 $\Pi X, F(X) \rightarrow G(X) \rightarrow Type$ when $F,G : Type \rightarrow Type$. 
 In this case there would no longer be any content to the parametricity theorem, but
 you wouldn't use this translation all the time.
+
+\subsubsection{Case 2}
+Another difficult case is how to put the category structure on $\Sigma X : Type, ((X \rightarrow X) \rightarrow X)$.
+Use notation $\spadesuit$ for the operation $(X \rightarrow X) \rightarrow X)$.
+The natural definition is a map $f : X \rightarrow Y$ such that $\forall a : X \rightarrow X, 
+\forall (b : Y \rightarrow Y), f \circ a = b \circ f \rightarrow f (\spadesuit a) = \spadesuit b$.
+This definition does not give composable morphisms. For this example, there is no obivous way to make relations
+into objects in the category, unlike the case of groups/rings etc.
+
+A definition that might work would be for a morphism to be a pair of a 
+function $f : X \rightarrow Y$ and $f_2 : (X \rightarrow X) \rightarrow (Y 
+rightarrow Y)$ such that $f_2$ as a relation is the lift of $f$.
+These morphisms are probably composable but the proof is hard.
+
+I can probably find some meaningful definition in this case, but does that mean I should and how do
+I demonstrate that this is the ``correct'' definition?
+
+\subsection{What properties does the category structure need to have?}
+
+In order for parametricity to imply naturality, given a type $\mathcal{C}$ and $X,Y:\mathcal{C}$
+the type $\text{Hom}(X,Y)$ must induce a map of relations from $[[\mathcal{C}]] Y Z$ to
+$[[\mathcal{C}]] X Z$, the ``preimage''. There should be some partial order on the set of relations
+$[[\mathcal{C}]] Y Z$, and the parametricity translation of 
+$\lambda X Y : \mathcal{C}, \text{Hom}(X, Y)$ should be something like
+$\lambda (X_1 X_2 : \mathcal{C}) (R_X : [[\mathcal{C}]] X_1 X_2) (Y_1 Y_2 : \mathcal{C})
+  (R_Y : [[\mathcal{C}]]Y_1 Y_2) (f_1 : X_1 \rightarrow Y_1) (f_2 : X_2 \rightarrow Y_2), 
+  X_R \le (f_1, f_2)^{-1}Y_R$.
 
 
 
