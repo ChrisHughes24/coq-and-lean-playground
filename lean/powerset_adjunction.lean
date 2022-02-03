@@ -17,14 +17,32 @@ example : powerset_adjunction ℕ ℕ :=
   adj := λ _, by simp }
 
 structure powerset_adjunction2 (X Y : Type) :=
-( preim : Π {Z : Type}, (set (Y × Z)) → (set (X × Z)) )
-( im : Π {Z : Type}, (set (X × Z)) → (set (Y × Z)) )
-( adj : Π {Z : Type}, galois_connection (@im Z) preim )
+( preim₁ : set (Y × Y) → set (X × Y) )
+( im₁    : set (X × Y) → set (Y × Y) )
+( preim₂ : set (X × Y) → set (X × X) )
+( im₂    : set (X × X) → set (X × Y) )
+( adj₁   : galois_connection im₁ preim₁ )
+( adj₂   : galois_connection im₂ preim₂ )
+( swap   : ∀ s, (im₂ ∘ preim₂) s ⊆ (preim₁ ∘ im₁) s )
 
-example : powerset_adjunction2 ℕ ℕ :=
-{ preim := λ _ _, set.univ,
-  im := λ _ _, ∅,
-  adj := λ _ _, by simp }
+
+example {X Y : Type} (f : X → Y) (s : set (X × Y)) :
+  prod.map (id : X → X) f '' (prod.map id f ⁻¹' s) ≤ 
+  prod.map f (id : Y → Y) ⁻¹' (prod.map f id '' s) :=
+begin
+  intro x,
+  cases x with x y,
+  { simp,
+    rintros x₁ x₂ h rfl rfl,
+    use x₁,
+    simp * }
+end
+
+example {X Y : Type} (h : powerset_adjunction2 X Y) (x : X) : Y :=
+begin
+  have := h.im₂ {y : X × X | y.1 = y.2}, 
+
+end
 
 
 structure powerset_adjunction (X Y : Type) :=

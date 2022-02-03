@@ -9,7 +9,7 @@ Inductive T (X Y : Type) : Type :=
 
 
 Inductive S : Type :=
-| mk : forall (A : Type) (R : A -> A -> Type), (forall a : A, R a a) -> S.
+| mk : forall (A : Type) (R : A -> A -> Type), S.
 
 Definition R (X Y : Type) : Type := X -> Y -> Type.
 
@@ -32,14 +32,7 @@ Parametricity eq as eq_param2 arity 2.
 Parametricity bool as boolp arity 2.
 Parametricity N as N_param arity 1.
 Parametricity T as T_param arity 2.
-Print T_param.
-Print M_param.
-Print K_param.
-Parametricity J as J_param arity 2.
-Print K_param. 
-Print J_param.
 
-Parametricity T as T_param arity 2.
 Print T_param.
 Parametricity S as S_param arity 2.
 Print S_param.

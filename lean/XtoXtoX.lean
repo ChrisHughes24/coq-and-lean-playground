@@ -36,8 +36,6 @@ structure hom2 :=
 (hf2 : ∀ (a : X → X) (b : Y → Y), (∀ x, f (a x) = b (f x)) ↔ f2 a = b)
 (map : ∀ (a : X → X), f (op a) = op (f2 a))
 
-def preimage {Z : Type} [myclass Z] ()
-
 example {X Y : Type} (f : X → Y)
   (f2 : (X → X) → (Y → Y))
   (hf2 : ∀ (a : X → X) (b : Y → Y), (∀ x, f (a x) = b (f x)) ↔ f2 a = b) :
@@ -134,5 +132,18 @@ def comp (f : hom X Y) (g : hom Y Z) : hom X Z :=
     dsimp at *,
     
   end }
+
+def to_functor {X : Type} (f : (X → X) → X) : (X → X → Type) → X → Type :=
+λ R x, Σ g : {g : X → X // f g = x}, ∀ a b, g.1 x = b → R a b
+
+def to_functor_map {X : Type} (f : (X → X) → X) (R₁ R₂ : (X → X → Type))
+  (i : Π x y, R₁ x y → R₂ x y) : Π x, to_functor f R₁ x → to_functor f R₂ x :=
+λ x g, ⟨g.1, λ a b h, i _ _ (g.2 _ _ h)⟩
+
+variables (X Y)
+def hom₃ := Σ f : X → Y, Π (i : Y → Y → Type) (x : X), 
+  to_functor op (λ x y : X, i (f x) (f y)) x → to_functor op i (f x)
+
+
 
 end myclass
