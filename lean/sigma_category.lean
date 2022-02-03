@@ -115,7 +115,7 @@ example : gen_structure (λ R : Ring, Module R) :=
   comp := λ R S T M₁ M₂ M₃ f g f' g', 
     @linear_map.comp _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ (id ⟨rfl⟩) g' f',
   id_comp := λ R S f M₁ M₂ f', begin
-      cases f', cases f, refl,
+      cases f', cases f, refl
     end,
   comp_id := λ R S f M₁ M₂ f', begin
       cases f', cases f, refl,
