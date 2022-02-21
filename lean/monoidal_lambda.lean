@@ -112,10 +112,10 @@ lambda "c" T $
     (var "c" (type.const ()))
 
 example (p q r : M) : 
-  termi (@cTi R _ M) (@const_termi _ _ _ op) exmpl₁ = 0 :=
+  termi (@cTi R _ M) (@const_termi _ _ _ op) exmpl₁ = sorry :=
 begin
   dunfold exmpl₁,
-  simp[termi],
+  simp[termi, contexti],
   dsimp [typei, contexti, contexti_append, cTi, const_termi],
   ext,
   simp,
