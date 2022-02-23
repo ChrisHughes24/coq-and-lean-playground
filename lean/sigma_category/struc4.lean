@@ -30,13 +30,6 @@ variables (𝒞 : Type u) [category.{v} 𝒞]
     sigma.mk ((f.1 ≫ g.1) ≫ h.1) (comp ⟨f.1 ≫ g.1, comp f g⟩ h) = 
     sigma.mk (f.1 ≫ (g.1 ≫ h.1)) (comp f ⟨g.1 ≫ h.1, comp g h⟩) )
 
-example {X Y : Type} (f : Y → X) : Y ≃ Σ' (x : X) (y : Y), f y = x :=
-{ to_fun := λ y, ⟨f y, y, rfl⟩,
-  inv_fun := λ a, a.2.1,
-  left_inv := λ y, rfl,
-  right_inv := by { rintros ⟨_, _, h⟩, subst h } }
-
-
 @[protect_proj] structure strucp : Type (max u v (w+1)) :=
 ( F : 𝒞 → Type w )
 ( hom : Π (A B : sigma F) (f : A.1 ⟶ B.1), Prop )
