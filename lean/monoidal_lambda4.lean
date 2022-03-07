@@ -14,8 +14,10 @@ inductive term2 (ct : type cT → Type) : Π (A : type cT), Type
 | const {T : type cT} (t : ct T) : term2 T
 | app {T₁ T₂ : type cT} (f : term2 (T₁.arrow T₂)) (x : term2 T₁) : term2 T₂
 | id {T₁ : type cT} : term2 (T₁.arrow T₁)
-| comp {T₁ T₂ T₃ : type cT} : term2 ((T₁.arrow T₂).arrow ((T₂.arrow T₃).arrow (T₁.arrow T₃)))
-| swap {T₁ T₂ T₃ : type cT} : term2 ((T₁.arrow (T₂.arrow T₃)).arrow (T₂.arrow (T₁.arrow T₃)))
+| comp {T₁ T₂ T₃ : type cT} : term2 ((T₁.arrow T₂).arrow 
+  ((T₂.arrow T₃).arrow (T₁.arrow T₃)))
+| swap {T₁ T₂ T₃ : type cT} : term2 ((T₁.arrow (T₂.arrow T₃)).arrow 
+  (T₂.arrow (T₁.arrow T₃)))
 
 -- def term2.reflect (ct : type cT → Type) [Π A, has_reflect (ct A)] [reflected cT] [reflected ct] : 
 --   Π {A : type cT}, term2 ct A → expr
@@ -28,15 +30,29 @@ inductive term2 (ct : type cT → Type) : Π (A : type cT), Type
 -- | _ (term2.app term2.swap (term2.app term2.swap f)) := f
 -- | _ (term2.app (term2.app (term2.app term2.comp f) g) x) := term2.app g (term2.app f x)
 -- | _ (term2.app (term2.app term2.comp f) term2.id) := f
+-- | _ (term2.app (term2.app term2.swap term2.comp) term2.id) := term2.id
 -- | _ x := x
+
+namespace term2
+
+variables {ct : type cT → Type} {T₁ T₂ T₃ : type cT}
+
+-- def app' : Π {T₁ T₂ : type cT} (f : term2 ct (T₁.arrow T₂)) (x : term2 ct T₁), term2 ct T₂
+-- | _ _ (const f) x := (const f).app x
+-- | _ _ (app f x) y := (app f x).app y
+-- | _ _ term2.id  x := x
+-- | _ _ (term2.app (term2.app term2.comp f) g) x := app' g (app' f x)
+-- | _ _ f x := f.app x
+-- using_well_founded { dec_tac := `[admit] }
+
+end term2
 
 @[reducible] def context (cT : Type) : Type := list (string × type cT)
 
 inductive term (ct : type cT → Type) : Π (Γ : context cT) (A : type cT), Type
 | const {T : type cT} (t : ct T) : term [] T
 | var (a : string) (T : type cT) : term [(a, T)] T
-| app (Γ₁ Γ₂ : context cT) {T₁ T₂ : type cT} (f : term Γ₁ (T₁.arrow T₂)) (x : term Γ₂ T₁) : 
-    term (Γ₂ ++ Γ₁) T₂
+| app (Γ₁ Γ₂ : context cT) {T₁ T₂ : type cT} (f : term Γ₁ (T₁.arrow T₂)) (x : term Γ₂ T₁) : term (Γ₂ ++ Γ₁) T₂
 | lambda {Γ : context cT} (a : string) (T₁ : type cT) {T₂ : type cT}
     (t : term ((a, T₁) :: Γ) T₂) : term Γ (T₁.arrow T₂)
 
@@ -62,11 +78,20 @@ def yoneda (A : type cT) : presheaf ct :=
 
 variable {ct}
 
-def yoneda_map {A B : type cT} (f : term2 ct (A.arrow B)) : hom (yoneda ct B) (yoneda ct A) :=
+def yoneda_map {A B : type cT} (f : term2 ct (A.arrow B)) :
+  hom (yoneda ct B) (yoneda ct A) :=
 λ C, term2.app (term2.app term2.comp f)
 
 def yoneda_full {A B : type cT} (f : hom (yoneda ct A) (yoneda ct B)) : term2 ct (B.arrow A) :=
 f A term2.id
+
+def hom_yoneda (F : presheaf ct) (A : type cT) : hom (yoneda ct A) F → F.1 A :=
+begin
+  dsimp [yoneda, hom],
+  intro x,
+  apply x,
+  exact term2.id
+end
 
 def alpha {A B C D X : type cT}
   (f : term2 ct (A.arrow (B.arrow X)))
@@ -86,11 +111,20 @@ begin
 end
 
 def tensor (F G : presheaf ct) : presheaf ct :=
-⟨λ c, Σ c₁ c₂, F.1 c₁ × G.1 c₂ × term2 ct (c₁.arrow (c₂.arrow c)),
+⟨λ c : type cT, Σ c₁ c₂, F.1 c₁ × G.1 c₂ × 
+    term2 ct (c₁.arrow (c₂.arrow c)),
   -- Strictly speaking should be a colimit or something.
-  λ A B f x, ⟨x.1, x.2.1, x.2.2.1, x.2.2.2.1,
+  λ A B f x, 
+  -- begin
+  --   rcases x with ⟨c₁, c₂, Fc₁, Gc₂, f⟩,
+  --   use [c₁, c₂, Fc₁, Gc₂],
+
+
+  -- end
+  ⟨x.1, x.2.1, x.2.2.1, x.2.2.2.1,
      term2.app (term2.app term2.comp x.2.2.2.2)
-      (term2.app (term2.app term2.swap term2.comp) f)⟩⟩
+      (term2.app (term2.app term2.swap term2.comp) f)⟩
+      ⟩
 
 def tensor_map_left {F₁ G F₂ : presheaf ct} (f : hom F₁ F₂)  :
   hom (tensor F₁ G) (tensor F₂ G) :=
@@ -135,85 +169,58 @@ begin
 end
 
 def homp (F G : presheaf ct) : presheaf ct :=
-⟨λ c, Π c₁ c₂ : type cT, term2 ct (c.arrow (c₁.arrow c₂)) → F.1 c₁ → G.1 c₂,
+⟨λ c, Σ (A : type cT) (B : type cT), hom F (yoneda ct A) × G.1 B × term2 ct ((A.arrow B).arrow c),
 begin
-  intros A B f x c₁ c₂ g Fc,
-  specialize x c₁ c₂ ((term2.comp.app f).app g) Fc,
-  exact x
+  intros A B f x,
+  use x.1,
+  use x.2.1,
+  use x.2.2.1,
+  use x.2.2.2.1,
+  refine (term2.comp.app x.2.2.2.2).app f
 end⟩
 
-def homp_map_right {F G₁ G₂ : presheaf ct} (f : G₁.hom G₂) :
-  hom (F.homp G₁) (F.homp G₂) :=
+def homp_yoneda₁ (A B : type cT) : hom (yoneda ct (A.arrow B)) (homp (yoneda ct A) (yoneda ct B)) :=
 begin
-  intros A x c₁ c₂ g Fc₁,
-  dsimp [homp] at *,
-  apply f,
-  apply x,
-  exact g,
-  exact Fc₁
+  intros C x,
+  dsimp [yoneda, homp, hom] at *,
+  use [A, B],
+  split,
+  { intro D, exact _root_.id },
+  { split,
+    intros,
+    exact term2.id,
+    exact x }
 end
 
-def homp_map_left {F G₁ G₂ : presheaf ct} (f : G₁.hom G₂) :
-  hom (G₂.homp F) (G₁.homp F) :=
+def homp_yoneda₂ (A B : type cT) : hom (homp (yoneda ct A) (yoneda ct B)) (yoneda ct (A.arrow B)) :=
 begin
-  intros A x c₁ c₂ g G₁c₁,
-  dsimp [homp] at *,
-  apply x,
-  exact g,
-  apply f,
-  assumption
+  intros C x,
+  dsimp [yoneda, homp, hom] at *,
+  refine (term2.comp.app _).app x.2.2.2.2,
+  refine (term2.comp.app _).app ((term2.swap.app term2.comp).app x.2.2.2.1),
+  refine term2.comp.app _,
+  apply x.2.2.1,
+  exact term2.id,
 end
 
-def hom_homp_swap {F G H : presheaf ct} (f : hom F (homp G H)) : hom G (homp F H) :=
+def tensor_mk {F G : presheaf ct} : hom (homp G (F.tensor G)) F :=
 begin
-  dsimp [hom, homp] at *,
-  intros A GA c₁ c₂ x Fc₁,
-  apply f,
-  exact Fc₁,
-  exact term2.swap.app x,
-  apply GA,
-
-end
-
-def comp {F G H : presheaf ct} : hom (homp G H) (homp (homp F G) (homp F H)) :=
-begin
-  intros A x,
-  dsimp [homp] at *,
-  intros c₁ c₂ f h c₃ c₄ g Fc₃,
-  have := alpha f g,
-  apply x _ _ this.2.2,
-  apply h,
-  apply this.2.1,
-  exact Fc₃
-end
-
-def scomp {F G H : presheaf ct} : hom (homp F G) (homp (homp G H) (homp F H)) :=
-begin
-  intros A x,
-  dsimp [homp] at *,
-  intros c₁ c₂ f h c₃ c₄ g Fc₃,
-  have := alpha (term2.swap.app f) g,
-  apply h _ _ this.2.2,
-  apply x,
-  apply this.2.1,
-  exact Fc₃
-end
-
-def tensor_mk {F G : presheaf ct} : hom F (homp G (F.tensor G)) :=
-begin
-  intros A FA c₁ c₂ f Gc₁,
-  dsimp [homp, tensor],
-  exact ⟨_, _, FA, Gc₁, f⟩
+  rintros A ⟨c₁, c₂, Gc₁, ⟨c₃, c₄, Fc₃, Gc₄, g⟩, f⟩,
+  dsimp [homp, tensor, hom, yoneda] at *,
+  refine F.2 _ Fc₃,
+  refine (term2.comp.app g).app _,
+  refine (term2.comp.app _).app f,
+  refine term2.comp.app _,
+  refine Gc₁ _ _,
+  exact Gc₄
 end
 
 def curry {F G H : presheaf ct} : (F.tensor G).hom H → F.hom (G.homp H) :=
 begin
-  intros x A FA c₁ c₂ f Gc₁,
-  dsimp [homp, tensor, hom] at *,
-  apply x,
-  refine ⟨_, _, _, _, f⟩,
-  exact FA,
-  exact Gc₁
+  dsimp [tensor, homp, hom, yoneda],
+  intros x A FA,
+  specialize x A,
+  use A,
 end
 
 def thing {A B C D : presheaf ct} (f : hom A (homp B C)) :
@@ -243,11 +250,26 @@ begin
   apply x _ FGA.2.2.1 _ _ _ FGA.2.2.2.1,
   exact FGA.2.2.2.2
 end
-
+universes u v w x
+def Day (F : Type u → Type v) (G : Type w → Type x) : Type* → Type* :=
+λ A, Σ (B : Type u) (C : Type w), F B × G C × (B → C → A)
 
 def assoc₁ {F G H : presheaf ct} : hom ((F.tensor G).tensor H) (F.tensor (G.tensor H)) :=
 uncurry (uncurry (hom.comp tensor_mk lcurry))
-
+-- ⟨x.snd.snd.snd.fst.snd.fst.arrow A,
+--    ⟨x.snd.snd.snd.fst.snd.fst,
+--     (⟨x.fst,
+--       ⟨x.snd.snd.snd.fst.fst,
+--        (x.snd.snd.fst,
+--         x.snd.snd.snd.fst.snd.snd.fst,
+--         term2.swap.app
+--           ((term2.comp.app
+--               (term2.swap.app
+--                  ((term2.comp.app (term2.swap.app x.snd.snd.snd.fst.snd.snd.snd.snd)).app
+--                     ((term2.swap.app term2.comp).app (term2.swap.app x.snd.snd.snd.snd))))).app
+--              term2.swap))⟩⟩,
+--      x.snd.snd.snd.fst.snd.snd.snd.fst,
+--      term2.swap.app (term2.swap.app term2.id))⟩⟩
 def assoc₂ {F G H : presheaf ct} : hom (F.tensor (G.tensor H)) ((F.tensor G).tensor H) :=
 begin
   rintros A ⟨B, C, fb, ⟨D, E, gd, he, dec⟩, bca⟩,
@@ -256,35 +278,6 @@ begin
   refine (term2.comp.app _).app (term2.comp.app dec),
   refine term2.swap.app term2.comp
 end
-
-def luncurry_aux {A F G H : presheaf ct} : (hom A (homp F (homp G H))) → (hom A (homp (tensor F G) H)) :=
-begin
-  intro f,
-  refine curry _,
-  refine assoc₂.comp _,
-  refine uncurry _,
-  refine uncurry _,
-  exact f,
-end
-
-def luncurry {F G H : presheaf ct} : hom (homp F (homp G H)) (homp (tensor F G) H) :=
-luncurry_aux (hom.id _)
-
-def id_homp₁ {F : presheaf ct} : hom (homp id F) F :=
-begin
-  intros A x,
-  dsimp [id, homp] at *,
-  apply x (A.arrow A),
-  exact term2.swap.app term2.id,
-  exact term2.id
-end
-
-def id_homp₂ {F : presheaf ct} : hom F (homp id F) :=
-begin
-  intros A x c₁ c₂ f y,
-  have := (term2.swap.app f).app y,
-  exact F.2 this x
-end 
 
 end presheaf
 
@@ -320,61 +313,121 @@ def yoneda_map {A B : presheaf ct} (f : A.hom B) : hom (yoneda ct B) (yoneda ct 
 def yoneda_full {A B : presheaf ct} (f : hom (yoneda ct A) (yoneda ct B)) : B.hom A :=
 (f A ⟨presheaf.hom.id _⟩).1
 
+def tensor (F G : dpresheaf ct) : dpresheaf ct :=
+⟨λ c, Σ c₁ c₂, F.1 c₁ × G.1 c₂ × (c₁.tensor c₂).hom c,
+  -- Strictly speaking should be a colimit or something.
+  λ A B f x, ⟨x.1, x.2.1, x.2.2.1, x.2.2.2.1, 
+     begin
+        refine presheaf.hom.comp x.2.2.2.2 f,
+     end⟩⟩
+
+def tensor_map_left {F₁ G F₂ : dpresheaf ct} (f : hom F₁ F₂)  :
+  hom (tensor F₁ G) (tensor F₂ G) :=
+λ A a, ⟨a.1, a.2.1, f _ a.2.2.1, a.2.2.2.1, a.2.2.2.2⟩
+
+def tensor_map_right {F G₁ G₂ : dpresheaf ct} (f : hom G₁ G₂)  :
+  hom (tensor F G₁) (tensor F G₂) :=
+λ A a, ⟨a.1, a.2.1, a.2.2.1, f _ a.2.2.2.1, a.2.2.2.2⟩
+
+def tensor_comm {F G : dpresheaf ct} : hom (tensor F G) (tensor G F) :=
+begin
+  intro A,
+  rintro ⟨c₁, c₂, Fc₁, Gc₂, f⟩,
+  exact ⟨c₂, c₁, Gc₂, Fc₁, presheaf.hom.comp presheaf.tensor_comm f⟩
+end
+ 
+
+def assoc₁ {F G H : dpresheaf ct} : hom ((F.tensor G).tensor H) (F.tensor (G.tensor H))  :=
+begin
+  intro A,
+  rintros ⟨E, D, ⟨B, C, fb, gc, bce⟩, hd, eda⟩,
+  refine ⟨B, C.tensor D, fb, ⟨C, D, gc, hd, presheaf.hom.id _⟩, _⟩, 
+  refine presheaf.assoc₂.comp _,
+  refine (presheaf.tensor_map_left _).comp eda,
+  exact bce 
+end
+
+def assoc₂ {F G H : dpresheaf ct} : hom (F.tensor (G.tensor H)) ((F.tensor G).tensor H) :=
+begin
+  intro A,
+  rintros ⟨B, C, fb, ⟨D, E, gd, he, dec⟩, bca⟩,
+  refine ⟨_, _, ⟨_, _, fb, gd, presheaf.hom.id _⟩, he, _⟩,
+  refine presheaf.hom.comp _ bca,
+  refine presheaf.hom.comp presheaf.assoc₁ _,
+  refine presheaf.tensor_map_right dec
+end
+
+def id : dpresheaf ct := yoneda _ presheaf.id
+
+def rid₁ (F : dpresheaf ct) : hom (F.tensor id) F :=
+begin
+  dsimp [hom, tensor],
+  intros A x,
+  apply F.2 _ x.2.2.1,
+  dsimp [id, yoneda] at x,
+  have := x.2.2.2.1.1,
+  have := presheaf.hom.comp  
+    (presheaf.tensor_map_right this) x.2.2.2.2,
+  exact presheaf.hom.comp (presheaf.rid₂ _) this,
+end
+
+def lid₁ (F : dpresheaf ct) : hom (id.tensor F) F :=
+begin
+  dsimp [hom, tensor],
+  intros A x,
+  apply F.2 _ x.2.2.2.1,
+  dsimp [id, yoneda] at x,
+  have := x.2.2.1.1,
+  have := presheaf.hom.comp  
+    (presheaf.tensor_map_left this) x.2.2.2.2,
+  exact presheaf.hom.comp (presheaf.lid₂ _) this,
+end
+
+def rid₂ (F : dpresheaf ct) : hom F (F.tensor id)  :=
+begin
+  dsimp [tensor, hom, id, yoneda],
+  intros A a,
+  use [A, presheaf.id, a, ⟨presheaf.hom.id _⟩],
+  refine presheaf.rid₁ _
+end
+
+def lid₂ (F : dpresheaf ct) : hom F (tensor id F) :=
+begin
+ dsimp [tensor, hom, id, yoneda],
+  intros A a,
+  use [presheaf.id, A, ⟨presheaf.hom.id _⟩, a],
+  refine presheaf.lid₁ _
+end
 
 def homp (F G : dpresheaf ct) : dpresheaf ct :=
-⟨λ c, Π c₁ c₂ : presheaf ct, c.hom (c₁.homp c₂) → F.1 c₁ → G.1 c₂, begin
-  intros A B f x c₁ c₂ g Fc,
-  specialize x c₁ c₂ (f.comp g) Fc,
-  exact x
+⟨λ c, hom (tensor (yoneda ct c) F) G, begin
+  intros A B f x,
+  refine hom.comp _ x,
+  refine tensor_map_left _,
+  refine yoneda_map _,
+  exact f
 end⟩
-
-def homp_map_left {F G H : dpresheaf ct} (f : hom G H) : hom (homp H F) (homp G F) := 
-begin
-  intros A,
-  dsimp [homp],
-  intros g c₁ c₂ h Gc₁,
-  apply g,
-  apply h,
-  apply f,
-  exact Gc₁
-end
-
-def homp_map_right {F G H : dpresheaf ct} (f : hom G H) : hom (homp F G) (homp F H) := 
-begin
-  intros A,
-  dsimp [homp],
-  intros g c₁ c₂ h Fc₁,
-  apply f,
-  apply g,
-  apply h,
-  apply Fc₁
-end
-
-def tensor (F G : dpresheaf ct) : dpresheaf ct :=
-⟨λ c, F.hom (G.homp (yoneda ct c)),
-  -- Strictly speaking should be a colimit or something.
-  λ A B f x, begin
-    refine x.comp _,
-    refine homp_map_right _,
-    exact yoneda_map _,
-  end⟩
 
 def curry {F G H : dpresheaf ct} : hom (tensor F G) H → hom F (homp G H) :=
 begin
-  dsimp [tensor, homp, hom],
-  intros x A FA c₁ c₂ f Gc₁,
-  apply x,
-  use A,
-  use c₁,
-  use f
+  dsimp [homp, hom] at *,
+  intros x A fA B y,
+  apply x B,
+  dsimp [tensor, yoneda] at *,
+  use [y.1, y.2.1],
+  use F.2 y.2.2.1.1 fA,
+  use y.2.2.2.1,
+  use y.2.2.2.2
 end
 
 def uncurry {F G H : dpresheaf ct} : hom F (homp G H) → hom (tensor F G) H :=
 begin
-  dsimp [tensor, hom, homp] at *,
+  dsimp [tensor, hom, homp, yoneda] at *,
   intros x A y,
-  apply x,
-
+  refine x _ y.2.2.1 A _,
+  refine ⟨y.1, y.2.1, _, y.2.2.2.1, y.2.2.2.2⟩,
+  constructor,
+  exact presheaf.hom.id _
 end
 
 def lcurry_aux {A F G H : dpresheaf ct} : (hom A (homp (tensor F G) H)) → (hom A (homp F (homp G H))) :=
@@ -400,88 +453,6 @@ begin
   exact f,
 end
 
-def tensor_map_left {F₁ G F₂ : dpresheaf ct} (f : hom F₁ F₂)  :
-  hom (tensor F₁ G) (tensor F₂ G) :=
-λ A a, ⟨a.1, a.2.1, f _ a.2.2.1, a.2.2.2.1, a.2.2.2.2⟩
-
-def tensor_map_right {F G₁ G₂ : dpresheaf ct} (f : hom G₁ G₂)  :
-  hom (tensor F G₁) (tensor F G₂) :=
-λ A a, ⟨a.1, a.2.1, a.2.2.1, f _ a.2.2.2.1, a.2.2.2.2⟩
-
-def tensor_comm {F G : dpresheaf ct} : hom (tensor F G) (tensor G F) :=
-begin
-  intro A,
-  rintro ⟨c₁, c₂, Fc₁, Gc₂, f⟩,
-  refine ⟨c₂, c₁, Gc₂, Fc₁, presheaf.hom_homp_swap f⟩,
-end
-
-def assoc₁ {F G H : dpresheaf ct} : hom ((F.tensor G).tensor H) (F.tensor (G.tensor H))  :=
-begin
-  intro A,
-  rintros ⟨E, D, ⟨B, C, fb, gc, bce⟩, hd, eda⟩,
-  refine ⟨B, C.tensor D, fb, ⟨C, D, gc, hd, presheaf.curry (presheaf.hom.id _)⟩, _⟩, 
-  refine bce.comp _,
-  refine (presheaf.homp_map_right eda).comp _,
-  refine presheaf.luncurry
-end
-
-def assoc₂ {F G H : dpresheaf ct} : hom (F.tensor (G.tensor H)) ((F.tensor G).tensor H) :=
-begin
-  intro A,
-  rintros ⟨B, C, fb, ⟨D, E, gd, he, dec⟩, bca⟩,
-  refine ⟨_, _, ⟨_, _, fb, gd, presheaf.curry (presheaf.hom.id _)⟩, he, _⟩,
-  refine presheaf.uncurry _,
-  refine bca.comp _,
-  refine presheaf.hom_homp_swap _,
-  refine dec.comp _,
-  exact presheaf.scomp
-end
-
-def id : dpresheaf ct := yoneda _ presheaf.id
-
-def rid₁ (F : dpresheaf ct) : hom (F.tensor id) F :=
-begin
-  dsimp [hom, tensor],
-  intros A x,
-  apply F.2 _ x.2.2.1,
-  dsimp [id, yoneda] at x,
-  refine x.2.2.2.2.comp _,
-  refine (presheaf.homp_map_left _).comp _,
-  swap,
-  exact x.2.2.2.1.1,
-  exact presheaf.id_homp₁
-end
-
-def lid₁ (F : dpresheaf ct) : hom (id.tensor F) F :=
-begin
-  dsimp [hom, tensor],
-  intros A x,
-  apply F.2 _ x.2.2.2.1,
-  dsimp [id, yoneda] at x,
-  refine (presheaf.hom_homp_swap x.2.2.2.2).comp _,
-  refine (presheaf.homp_map_left _).comp _,
-  swap,
-  exact x.2.2.1.1,
-  exact presheaf.id_homp₁
-end
-
-def rid₂ (F : dpresheaf ct) : hom F (F.tensor id)  :=
-begin
-  dsimp [tensor, hom, id, yoneda],
-  intros A a,
-  use [A, presheaf.id, a, ⟨presheaf.hom.id _⟩],
-  exact presheaf.id_homp₂
-end
-
-def lid₂ (F : dpresheaf ct) : hom F (tensor id F) :=
-begin
- dsimp [tensor, hom, id, yoneda],
-  intros A a,
-  use [presheaf.id, A, ⟨presheaf.hom.id _⟩, a],
-  refine presheaf.hom_homp_swap _,
-  exact presheaf.id_homp₂
-end
-
 def luncurry {F G H : dpresheaf ct} : hom (homp F (homp G H)) (homp (tensor F G) H) :=
 luncurry_aux (hom.id _)
 
@@ -494,6 +465,22 @@ begin
   refine (tensor_map_right (uncurry (hom.id _))).comp _,
   refine uncurry _,
   exact hom.id _
+end
+
+def homp_map_left {F G H : dpresheaf ct} (f : hom G H) : hom (homp H F) (homp G F) := 
+begin
+  intros A,
+  dsimp [homp],
+  intro g,
+  refine hom.comp (tensor_map_right f) g,
+end
+
+def homp_map_right {F G H : dpresheaf ct} (f : hom G H) : hom (homp F G) (homp F H) := 
+begin
+  intros A,
+  dsimp [homp],
+  intro g,
+  refine hom.comp g f,
 end
 
 
@@ -526,6 +513,33 @@ def tensor_hom (A B : type cT) : presheaf ct :=
     refine (term2.comp.app g).app _,
     refine (term2.swap.app term2.comp).app f,
   end⟩
+
+def eval_tensor₁ (T₁ T₂ T₃ : type cT) : 
+  hom (tensor (eval ct T₁) (eval ct T₂)) (eval ct T₃) → 
+  term2 ct (T₁.arrow (T₂.arrow T₃)) :=
+begin
+  dsimp [eval, yoneda, hom, tensor] at *,
+  intros x,
+  refine (x (tensor_hom T₁ T₂) _).1,
+  dsimp [presheaf.hom],
+  use [presheaf.yoneda ct T₁, presheaf.yoneda ct T₂, ⟨term2.id⟩, ⟨term2.id⟩],
+  dsimp [presheaf.yoneda, presheaf.tensor, tensor_hom],
+  intros A y,
+  refine (term2.comp.app ((term2.comp.app y.2.2.1).app y.2.2.2.2)).app _,
+  refine term2.comp.app y.2.2.2.1
+end
+
+def eval_tensor₂ (T₁ T₂ T₃ : type cT) : 
+  term2 ct (T₁.arrow (T₂.arrow T₃)) → 
+  hom (tensor (eval ct T₁) (eval ct T₂)) (eval ct T₃) :=
+begin
+  dsimp [eval, yoneda, hom, tensor] at *,
+  intros f A y,
+  dsimp [presheaf.tensor, presheaf.hom] at *,
+  split,
+  apply y.2.2.2.2,
+  use [T₁, T₂, y.2.2.1.1, y.2.2.2.1.1, f]
+end
 
 def thing (A : presheaf ct) (B : type cT) : presheaf ct :=
 ⟨λ C, A.1 (B.arrow C), 
@@ -588,7 +602,8 @@ def contexti_append₂ : Π (Γ₁ Γ₂ : context cT), hom
 
 open dpresheaf
 
-def termi : Π {Γ : context cT} {A : type cT} (t : term ct Γ A),
+@[reducible] def termi : Π {Γ : context cT} {A : type cT} 
+  (t : term ct Γ A),
   hom (@contexti _ ct Γ) (eval ct A)
 | _ A (term.const t) := λ F x, ⟨x.1 _ (term2.const t)⟩
 | _ _ (term.var _ A) := lid₁ _
@@ -597,7 +612,6 @@ hom.comp (contexti_append₁ _ _) (uncurry (hom.comp (termi f)
    ((eval_homp₂ _ _).comp $ homp_map_left (termi x))))
 | Γ (type.arrow _ T₂) (term.lambda a T₁ t) := 
   hom.comp (curry (termi t)) (eval_homp₁ _ _)
-
 
 end dpresheaf
 
@@ -654,8 +668,6 @@ end
 | _ (term2.swap) := linear_map.swap
 
 
-
-
 def const_term : type unit → Type
 | (type.arrow (type.const ()) (type.arrow (type.const ()) (type.const ()))) := unit
 | _ := empty
@@ -700,10 +712,11 @@ lambda "c" T $
 
 example (p q r : M) : 
   (((termi (@cTi R _ M) (@const_termi _ _ _ op) (term_to_term2 exmpl₁)).to_fun p).to_fun q).to_fun r = 
-  op (op p q) r :=
-begin
-  refl
-end
+  op (op p q) r := begin
+    refl,
+
+
+  end
 
 def exmpl₂ : @term unit const_term [] 
   ((type.const ()).arrow ((type.const ()).arrow ((type.const ()).arrow (type.const ())))) :=

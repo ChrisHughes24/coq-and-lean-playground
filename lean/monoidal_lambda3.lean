@@ -14,8 +14,10 @@ inductive term2 (ct : type cT → Type) : Π (A : type cT), Type
 | const {T : type cT} (t : ct T) : term2 T
 | app {T₁ T₂ : type cT} (f : term2 (T₁.arrow T₂)) (x : term2 T₁) : term2 T₂
 | id {T₁ : type cT} : term2 (T₁.arrow T₁)
-| comp {T₁ T₂ T₃ : type cT} : term2 ((T₁.arrow T₂).arrow ((T₂.arrow T₃).arrow (T₁.arrow T₃)))
-| swap {T₁ T₂ T₃ : type cT} : term2 ((T₁.arrow (T₂.arrow T₃)).arrow (T₂.arrow (T₁.arrow T₃)))
+| comp {T₁ T₂ T₃ : type cT} : term2 ((T₁.arrow T₂).arrow 
+  ((T₂.arrow T₃).arrow (T₁.arrow T₃)))
+| swap {T₁ T₂ T₃ : type cT} : term2 ((T₁.arrow (T₂.arrow T₃)).arrow 
+  (T₂.arrow (T₁.arrow T₃)))
 
 -- def term2.reflect (ct : type cT → Type) [Π A, has_reflect (ct A)] [reflected cT] [reflected ct] : 
 --   Π {A : type cT}, term2 ct A → expr
@@ -34,8 +36,6 @@ inductive term2 (ct : type cT → Type) : Π (A : type cT), Type
 namespace term2
 
 variables {ct : type cT → Type} {T₁ T₂ T₃ : type cT}
-
-def comp' : Π {T₁ T₂}
 
 -- def app' : Π {T₁ T₂ : type cT} (f : term2 ct (T₁.arrow T₂)) (x : term2 ct T₁), term2 ct T₂
 -- | _ _ (const f) x := (const f).app x
@@ -78,7 +78,8 @@ def yoneda (A : type cT) : presheaf ct :=
 
 variable {ct}
 
-def yoneda_map {A B : type cT} (f : term2 ct (A.arrow B)) : hom (yoneda ct B) (yoneda ct A) :=
+def yoneda_map {A B : type cT} (f : term2 ct (A.arrow B)) :
+  hom (yoneda ct B) (yoneda ct A) :=
 λ C, term2.app (term2.app term2.comp f)
 
 def yoneda_full {A B : type cT} (f : hom (yoneda ct A) (yoneda ct B)) : term2 ct (B.arrow A) :=
@@ -101,12 +102,23 @@ begin
   use term2.swap.app term2.id
 end
 
+infix ` => `: 50 := type.arrow
+
 def tensor (F G : presheaf ct) : presheaf ct :=
-⟨λ c, Σ c₁ c₂, F.1 c₁ × G.1 c₂ × term2 ct (c₁.arrow (c₂.arrow c)),
+⟨λ c : type cT, Σ c₁ c₂, F.1 c₁ × G.1 c₂ × 
+    term2 ct (c₁.arrow (c₂.arrow c)),
   -- Strictly speaking should be a colimit or something.
-  λ A B f x, ⟨x.1, x.2.1, x.2.2.1, x.2.2.2.1,
+  λ A B f x, 
+  -- begin
+  --   rcases x with ⟨c₁, c₂, Fc₁, Gc₂, f⟩,
+  --   use [c₁, c₂, Fc₁, Gc₂],
+
+
+  -- end
+  ⟨x.1, x.2.1, x.2.2.1, x.2.2.2.1,
      term2.app (term2.app term2.comp x.2.2.2.2)
-      (term2.app (term2.app term2.swap term2.comp) f)⟩⟩
+      (term2.app (term2.app term2.swap term2.comp) f)⟩
+      ⟩
 
 def tensor_map_left {F₁ G F₂ : presheaf ct} (f : hom F₁ F₂)  :
   hom (tensor F₁ G) (tensor F₂ G) :=
@@ -226,26 +238,10 @@ begin
   apply x _ FGA.2.2.1 _ _ _ FGA.2.2.2.1,
   exact FGA.2.2.2.2
 end
-universes u v w x
-def Day (F : Type u → Type v) (G : Type w → Type x) : Type* → Type* :=
-λ A, Σ (B : Type u) (C : Type w), F B × G C × (B → C → A)
 
 def assoc₁ {F G H : presheaf ct} : hom ((F.tensor G).tensor H) (F.tensor (G.tensor H)) :=
 uncurry (uncurry (hom.comp tensor_mk lcurry))
--- ⟨x.snd.snd.snd.fst.snd.fst.arrow A,
---    ⟨x.snd.snd.snd.fst.snd.fst,
---     (⟨x.fst,
---       ⟨x.snd.snd.snd.fst.fst,
---        (x.snd.snd.fst,
---         x.snd.snd.snd.fst.snd.snd.fst,
---         term2.swap.app
---           ((term2.comp.app
---               (term2.swap.app
---                  ((term2.comp.app (term2.swap.app x.snd.snd.snd.fst.snd.snd.snd.snd)).app
---                     ((term2.swap.app term2.comp).app (term2.swap.app x.snd.snd.snd.snd))))).app
---              term2.swap))⟩⟩,
---      x.snd.snd.snd.fst.snd.snd.snd.fst,
---      term2.swap.app (term2.swap.app term2.id))⟩⟩
+
 def assoc₂ {F G H : presheaf ct} : hom (F.tensor (G.tensor H)) ((F.tensor G).tensor H) :=
 begin
   rintros A ⟨B, C, fb, ⟨D, E, gd, he, dec⟩, bca⟩,
@@ -578,7 +574,8 @@ def contexti_append₂ : Π (Γ₁ Γ₂ : context cT), hom
 
 open dpresheaf
 
-@[reducible] def termi : Π {Γ : context cT} {A : type cT} (t : term ct Γ A),
+def termi : Π {Γ : context cT} {A : type cT} 
+  (t : term ct Γ A),
   hom (@contexti _ ct Γ) (eval ct A)
 | _ A (term.const t) := λ F x, ⟨x.1 _ (term2.const t)⟩
 | _ _ (term.var _ A) := lid₁ _
@@ -679,17 +676,15 @@ lambda "c" T $
   app [("a", T), ("b", T)].reverse [("c", T)] 
   (app [] [("a", T), ("b", T)].reverse (const mult) 
     (app [("a", T)] [("b", T)] 
-      (app [] [("a", T)] (const mult) (var "a" (type.const ()))) 
-        (var "b" (type.const ()))) : _) 
+      (app [] [("a", T)] (const mult) (var "a" (type.const ())))
+        (var "b" (type.const ()))) : _)
     (var "c" (type.const ()))
 
-#reduce (term_to_term2 exmpl₁)
-
-example (p q r : M) : 
+example (p q r : M) :
   (((termi (@cTi R _ M) (@const_termi _ _ _ op) (term_to_term2 exmpl₁)).to_fun p).to_fun q).to_fun r = 
   op (op p q) r :=
 begin
-  refl
+  refl,
 end
 
 def exmpl₂ : @term unit const_term [] 
@@ -703,7 +698,7 @@ lambda "c" T $
       (app [] [("b", T)] (const mult) (var "b" (type.const ()))) 
         (var "c" (type.const ())))  : _)
 
-#reduce (term_to_term2 exmpl₂)
+#reduce term_to_term2 exmpl₂
 
 example (p q r : M) : 
   (((termi (@cTi R _ M) (@const_termi _ _ _ op) (term_to_term2 exmpl₂)).to_fun p).to_fun q).to_fun r = 
@@ -731,7 +726,7 @@ example (p q r : M) (op1 : M →ₗ[R] M →ₗ[R] M):
   ((((termi (@cTi R _ M) (@const_termi _ _ _ op) (term_to_term2 exmpl₃)).to_fun op1).to_fun p).to_fun q).to_fun r = 
   op1 (op p q) r :=
 begin
-  refl,
+refl,
 
   -- dsimp [termi, const_termi, cTi, term_to_term2, dpresheaf.termi, exmpl₃, dpresheaf.eval, dpresheaf.eval_homp₁,
   --   dpresheaf.eval_homp₂, dpresheaf.contexti, dpresheaf.contexti_append₂, dpresheaf.contexti_append₁,
