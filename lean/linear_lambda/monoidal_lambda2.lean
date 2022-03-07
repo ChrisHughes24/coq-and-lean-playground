@@ -4,7 +4,7 @@ import data.list.sort
 import ring_theory.tensor_product
 import algebra.category.Module.basic
 
-@[derive decidable_eq] inductive type (cT : Type) : Type
+inductive type (cT : Type) : Type
 | const : cT → type
 | arrow : type → type → type
 
@@ -139,7 +139,7 @@ open category_theory
 
 section
 
-@[derive decidable_eq] inductive type3 (cT : Type) : Type
+inductive type3 (cT : Type) : Type
 | const : cT → type3
 | arrow : type3 → type3 → type3
 | id {} : type3

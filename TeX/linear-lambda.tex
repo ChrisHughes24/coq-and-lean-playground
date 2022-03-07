@@ -1,0 +1,334 @@
+\def\paperversiondraft{draft}
+\def\paperversionblind{blind}
+
+\ifx\paperversion\paperversionblind
+\else
+  \def\paperversion{blind}
+\fi
+
+% !TEX TS-program = pdflatex
+% !TEX encoding = UTF-8 Unicode
+
+% This is a simple template for a LaTeX document using the "article" class.
+% See "book", "report", "letter" for other types of document.
+
+\documentclass[12pt]{article} % use larger type; default would be 10pt
+
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{xargs}
+\usepackage{xparse}
+\usepackage{xifthen, xstring}
+\usepackage{ulem}
+\usepackage{xspace}
+\usepackage{multirow}
+\setlength {\marginparwidth }{2cm}
+\usepackage{todonotes}
+\bibliographystyle{amsalpha}
+\makeatletter
+\font\uwavefont=lasyb10 scaled 652
+\DeclareSymbolFontAlphabet{\mathrm}    {operators}
+\DeclareSymbolFontAlphabet{\mathnormal}{letters}
+\DeclareSymbolFontAlphabet{\mathcal}   {symbols}
+\DeclareMathAlphabet      {\mathbf}{OT1}{cmr}{bx}{n}
+\DeclareMathAlphabet      {\mathsf}{OT1}{cmss}{m}{n}
+\DeclareMathAlphabet      {\mathit}{OT1}{cmr}{m}{it}
+\DeclareMathAlphabet      {\mathtt}{OT1}{cmtt}{m}{n}
+%% \newcommand\colorwave[1][blue]{\bgroup\markoverwith{\lower3\p@\hbox{\uwavefont\textcolor{#1}{\char58}}}\ULon}
+% \makeatother
+
+% \ifx\paperversion\paperversiondraft
+% \newcommand\createtodoauthor[2]{%
+% \def\tmpdefault{emptystring}
+% \expandafter\newcommand\csname #1\endcsname[2][\tmpdefault]{\def\tmp{##1}\ifthenelse{\equal{\tmp}{\tmpdefault}}
+%    {\todo[linecolor=#2!20,backgroundcolor=#2!25,bordercolor=#2,size=\tiny]{\textbf{#1:} ##2}}
+%    {\ifthenelse{\equal{##2}{}}{\colorwave[#2]{##1}\xspace}{\todo[linecolor=#2!10,backgroundcolor=#2!25,bordercolor=#2]{\tiny \textbf{#1:} ##2}\colorwave[#2]{##1}}}}}
+% \else
+% \newcommand\createtodoauthor[2]{%
+% \expandafter\newcommand\csname #1\endcsname[2][\@nil]{}}
+% \fi
+
+
+%%% Examples of Article customizations
+% These packages are optional, depending whether you want the features they provide.
+% See the LaTeX Companion or other references for full information.
+
+%%% PAGE DIMENSIONS
+\usepackage{geometry} % to change the page dimensions
+\geometry{a4paper} % or letterpaper (US) or a5paper or....
+\geometry{margin=1in} % for example, change the margins to 2 inches all round
+% \geometry{landscape} % set up the page for landscape
+%   read geometry.pdf for detailed page layout information
+
+\usepackage{graphicx} % support the \includegraphics command and options
+
+% \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+
+\usepackage[utf8x]{inputenc}
+\usepackage{amssymb}
+\usepackage{listings}
+
+\usepackage{color}
+\definecolor{keywordcolor}{rgb}{0.7, 0.1, 0.1}   % red
+\definecolor{commentcolor}{rgb}{0.4, 0.4, 0.4}   % grey
+\definecolor{symbolcolor}{rgb}{0.0, 0.1, 0.6}    % blue
+\definecolor{sortcolor}{rgb}{0.1, 0.5, 0.1}      % green
+\usepackage{listings}
+\def\lstlanguagefiles{lstlean.tex}
+\lstset{language=lean}
+
+
+%%% PACKAGES
+\usepackage{inputenc}
+\usepackage{booktabs} % for much better looking tables
+\usepackage{array} % for better arrays (eg matrices) in maths
+\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+
+\usepackage{textcomp}
+
+
+% These packages are all incorporated in the memoir class to one degree or another...
+
+%%% HEADERS & FOOTERS
+\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt} % customise the layout...
+\lhead{\leftmark}\chead{}\rhead{\rightmark}
+\lfoot{}\cfoot{\thepage}\rfoot{}
+
+%%% SECTION TITLE APPEARANCE
+\usepackage{sectsty}
+\allsectionsfont{\sffamily\mdseries\upshape} % (See the fntguide.pdf for font help)
+% (This matches ConTeXt defaults)
+
+%%% ToC (table of contents) APPEARANCE
+\usepackage[nottoc,notlof,notlot]{tocbibind} % Put the bibliography in the ToC
+\usepackage[titles,subfigure]{tocloft} % Alter the style of the Table of Contents
+\renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
+\renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{upgreek}
+\usepackage{tikz-cd}
+\theoremstyle{definition}
+\newtheorem{thm}{Theorem}[subsection]
+\theoremstyle{definition}
+\newtheorem{corol}[thm]{Corollary}
+\theoremstyle{definition}
+\newtheorem{lemma}[thm]{Lemma}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{exmpl}[thm]{Example}
+\usepackage{lscape}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\newcommand{\invamalg}{\mathbin{\text{\rotatebox[origin=c]{180}{$\amalg$}}}}
+
+\setcounter{secnumdepth}{4}
+
+\titleformat{\paragraph}
+{\normalfont\normalsize}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}
+{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+%%% END Article customizations
+
+%%% The "real" document content comes below...
+
+\title{Linear Lambda Notes}
+\author{Christopher Hughes}
+
+\begin{document}
+
+\section{The problem}
+
+A term in the linear lambda calculus can be interpreted as a morphism in any 
+symmetric monoidal closed category. The category of Modules is a symmetric monoidal
+closed category so we can interpret it as a morphism there. The resulting interpreted morphism will 
+use the tensor products in the monoidal closed category. We would like to interpret
+it without using the tensor products.
+
+In other words, given a morphism $f$ in a free monoidal closed category ($FMCC$ below) between two objects that are 
+in the image of the map $F$ from the free closed category ($FCC$ below), we want to compute a morphism in $FCC$
+such that it maps to the same morphism in the category of Modules.
+
+% https://tikzcd.yichuanshen.de/#N4Igdg9gJgpgziAXAbVABwnAlgFyxMJZABgBoAmAXVJADcBDAGwFcYkQAxAYS5AF9S6TLnyEU5CtTpNW7DgFke-QSAzY8BIhOJSGLNohDzo-KTCgBzeEVAAzAE4QAtkjIgcEJOQF3HLxACMNB5ePiAOzq7BnoE0jPQARjCMAArCGmIg9lgWABY4IDR6soYcpnxAA
+\begin{tikzcd}
+    &  & Mod             \\
+    &  &                 \\
+FCC \arrow[rruu] \arrow[rr, "F"'] &  & FMCC \arrow[uu]
+\end{tikzcd}
+
+The objects in $FCC$ are given by the following inductive type (this is not quite a free closed category).
+We have a set of type constants $cT$.
+
+\begin{lstlisting}
+inductive type (cT : Type) : Type
+| const : cT → type
+| arrow : type → type → type
+\end{lstlisting}
+
+The morphisms in $FCC$ are given by the following inductive type. For each \lstinline{type}, there is a set of
+constants of that type given by \lstinline{ct}.
+
+\begin{lstlisting}
+inductive term2 (ct : type cT → Type) : Π (A : type cT), Type
+| const {T : type cT} (t : ct T) : term2 T
+| app {T₁ T₂ : type cT} (f : term2 (T₁.arrow T₂)) (x : term2 T₁) : term2 T₂
+| id {T₁ : type cT} : term2 (T₁.arrow T₁)
+| comp {T₁ T₂ T₃ : type cT} : term2 ((T₁.arrow T₂).arrow ((T₂.arrow T₃).arrow (T₁.arrow T₃)))
+| swap {T₁ T₂ T₃ : type cT} : term2 ((T₁.arrow (T₂.arrow T₃)).arrow (T₂.arrow (T₁.arrow T₃)))
+\end{lstlisting}
+
+The objects in $FMCC$ are given by the following inductive type. 
+There is an obvious map \lstinline{type} to \lstinline {type3}.
+
+\begin{lstlisting}
+inductive type3 (cT : Type) : Type
+| const : cT → type3
+| arrow : type3 → type3 → type3
+| id {} : type3
+| tensor : type3 → type3 → type3
+\end{lstlisting}
+
+The morphisms in $FMCC$ are given by 
+
+\begin{lstlisting}
+inductive term3 (const_term : type cT → Type) : Π (A : type3 cT), Type
+| const {T : type cT} (t : const_term T) : term3 (type3.of_type T)
+| id (T : type3 cT) : term3 (T.arrow T)
+| curry {T₁ T₂ T₃ : type3 cT} :
+  term3 ((((T₁.tensor T₂).arrow T₃)).arrow (T₁.arrow (T₂.arrow T₃)))
+| uncurry {T₁ T₂ T₃ : type3 cT} :
+  term3 ((T₁.arrow (T₂.arrow T₃)).arrow ((T₁.tensor T₂).arrow T₃))
+| tensor_map {T₁ T₂ T₃ T₄ : type3 cT} (f₁ : term3 (T₁.arrow T₃))
+  (f₂ : term3 (T₂.arrow T₄)) : term3 ((T₁.tensor T₂).arrow (T₃.tensor T₄))
+| tensor_symm {T₁ T₂ : type3 cT} : term3 ((T₁.tensor T₂).arrow (T₂.tensor T₁))
+| lid₁ {T : type3 cT} : term3 ((type3.id.tensor T).arrow T)
+| lid₂ {T : type3 cT} : term3 (T.arrow (type3.id.tensor T))
+| app {T₁ T₂ : type3 cT} (f : term3 (T₁.arrow T₂)) (x : term3 T₁) : term3 T₂
+| comp {T₁ T₂ T₃ : type3 cT} (f : term3 (T₁.arrow T₂)) :
+  term3 ((T₂.arrow T₃).arrow (T₁.arrow T₃))
+\end{lstlisting}
+
+\section{Solving the problem}
+
+We solve the problem by defining a new category $(FCC \rightarrow Set) \rightarrow Set$, 
+and a functor $FMCC$ to $(FCC \rightarrow Set) \rightarrow Set$ such that the following 
+commutes. By fullness of the functor $FCC$ to $(FCC \rightarrow Set) \rightarrow Set$, we can compute everything we need,
+and the commutavity of the diagram will tell us we defined the right thing. 
+We can define the functor $FMCC$ to $(FCC \rightarrow Set) \rightarrow Set$ by defining a closed monoidal structure on
+$(FCC \rightarrow Set) \rightarrow Set$. The map from $(FCC \rightarrow Set) \rightarrow Set$ to $Mod$ and its commutativity can be proven
+using the universal property of the presheaf category, and the continuity of the yoneda embedding.
+
+% https://tikzcd.yichuanshen.de/#N4Igdg9gJgpgziAXAbVABwnAlgFyxMJZAZgBoAGAXVJADcBDAGwFcYkQBZaEAX1PUy58hFOVIBWanSat2AMQDCC3vxAZseAkQBsEqQxZtEIORyUqBG4UTLF9MoyAAUihQAIAOh4BOWAOYAFjj03t4QAO5uAMowOACUnj7+QSFhkTE4vFIwUH7wRKAAZmEAtkgAjDQ4EEhi0oZIYMyMjDSM9ABGMIwACoKaIiCMMIWZfEWlFVU1iABMNAayxnIgbZ3dfVZaxr6BY6rFEGVz07ULDo3NrUPrvf3WxsOjFiCHx5Ug1UhkN113W4NdkFVvUlq8ri83kh5p8ZsRxq9Jogfl9EOQeJQeEA
+\begin{tikzcd}
+    &  &  & Mod                                               &  &  &                                     \\
+    &  &  &                                                   &  &  &                                     \\
+    &  &  &                                                   &  &  &                                     \\
+    &  &  & (FCC \rightarrow Set) \rightarrow Set \arrow[uuu] &  &  &                                     \\
+    &  &  &                                                   &  &  &                                     \\
+FCC \arrow[rrruuuuu] \arrow[rrrrrr, "F"'] \arrow[rrruu, "full"'] &  &  &                                                   &  &  & FMCC \arrow[llluuuuu] \arrow[llluu]
+\end{tikzcd}
+
+Universal Property of $(FCC \rightarrow Set) \rightarrow Set$. 
+
+In the following diagram each functor is labelled $con$ if it is continuous and $cocon$ if it is cocontinuous.
+The category $(FCC \rightarrow Set)^{op}$ is the completion of $FCC$, so by its universal property there is a continuous
+map into $Set$. It is also true that the yoneda embedding from $FCC$ is cocontinuous. The category
+$(FCC \rightarrow Set) \rightarrow Set$ is the cocompletion of $(FCC \rightarrow Set)^{op}$ so there is a 
+cocontinuous map into $Mod$, and it is also true that the embedding from $(FCC \rightarrow Set)^{op}$ is continuous.
+
+
+
+
+% https://tikzcd.yichuanshen.de/#N4Igdg9gJgpgziAXAbVABwnAlgFyxMJZABgBoBmAXVJADcBDAGwFcYkQAxAYS5AF9S6TLnyEUAJgrU6TVuwAU3LgAIAOqoBOWAOYALHPQ0aIAd2UBlGDgCUAPWAQ0ffoJAZseAkQAsUmgxY2RBBFHjVNHX1DYzNLG3CtPQMjUwsrFyEPUR9SYmkAuWCAWWh+aRgobXgiUAAzYwBbJDIQHAgkAEYaRnoAIxhGAAVhTzEQRP0Qf1kgkABjCAXCATrG5po2pHIVkHqIJsQu1vbEcm6+geGsr2CJnCmZQPYljN21w42TyRAe-qGR7K3SL3aZPYIvHZ7A7fTanc5-K4iG7jYEPAqzBYQyh8IA
+\begin{tikzcd}
+    &  &                                                                     &  & Mod                                                         \\
+    &  &                                                                     &  &                                                             \\
+    &  &                                                                     &  &                                                             \\
+FCC \arrow[rr, "cocon"'] \arrow[rrrruuu] &  & (FCC \rightarrow Set)^{op} \arrow[rruuu, "con"'] \arrow[rr, "con"'] &  & (FCC \rightarrow Set) \rightarrow Set \arrow[uuu, "cocon"']
+\end{tikzcd}
+
+The functor $(FCC \rightarrow Set) \rightarrow Set$ to $Mod$ does not preserve all limits, however it does 
+preserve all of the limits of diagrams in $FCC$, because these limits exist in the category $(FCC \rightarrow Set)^{op}$.
+
+The category $(FCC \rightarrow Set) \rightarrow Set$ can be thought of as freely adjoining all colimits of limits to the category $FCC$.
+This is necessary to define a monoidal closed structure on it because the definition of a hom object in this category is a 
+colimit of a limit (although it is not actually defined like that in the code). This means that the map
+$(FCC \rightarrow Set) \rightarrow Set$ will preserve hom objects and tensor objects. 
+
+We can now show why the following commutes
+
+% https://tikzcd.yichuanshen.de/#N4Igdg9gJgpgziAXAbVABwnAlgFyxMJZAZgBoAGAXVJADcBDAGwFcYkQBZaEAX1PUy58hFOVIBWanSat2AMQDCC3vxAZseAkQBsEqQxZtEIORyUqBG4UTLF9MoyAAUihQAIAOh4BOWAOYAFjj03t4QAO5uAMowOACUnj7+QSFhkTE4vFIwUH7wRKAAZmEAtkgAjDQ4EEhi0oZIYMyMjDSM9ABGMIwACoKaIiCMMIWZfEWlFVU1iABMNAayxnIgbZ3dfVZaxr6BY6rFEGVz07ULDo3NrUPrvf3WxsOjFiCHx5Ug1UhkN113W4NdkFVvUlq8ri83kh5p8ZsRxq9Jogfl9EOQeJQeEA
+\begin{tikzcd}
+    &  &  & Mod                                               &  &  &                                     \\
+    &  &  &                                                   &  &  &                                     \\
+    &  &  &                                                   &  &  &                                     \\
+    &  &  & (FCC \rightarrow Set) \rightarrow Set \arrow[uuu] &  &  &                                     \\
+    &  &  &                                                   &  &  &                                     \\
+FCC \arrow[rrruuuuu] \arrow[rrrrrr, "F"'] \arrow[rrruu, "full"'] &  &  &                                                   &  &  & FMCC \arrow[llluuuuu] \arrow[llluu]
+\end{tikzcd}
+
+The large triangle containing $FCC$, $FMCC$ and $Mod$ commutes more or less by definition. The triangle on the left commutes because
+the map $(FCC \rightarrow Set) \rightarrow Set$ is defined using the universal property of the free cocompletion and free completion.
+The triangle on the right commutes because the functor $(FCC \rightarrow Set) \rightarrow Set$ preserves colimits of limits,
+which means it preserves hom objects and tensor products, so it preserves everything in $FMCC$. (This is not that precise)
+Therefore the entire diagram commutes.
+
+\section{Bicompletions}
+
+The idea of computing with presheaves to simplify expressions or prove equalities can be taken much further with bicompletions.
+Given a category $\mathcal{C}$ it is hopefully possible to computably define a bicompletion of $\mathcal{C}$, called $\Lambda \mathcal{C}$, a 
+full faithful map $i : \mathcal{C} \rightarrow \Lambda \mathcal{C}$, with the following universal property.
+Given a bicomplete category $\mathcal{D}$ and a functor $F : \mathcal{C} \rightarrow \mathcal{D}$, there is a unique 
+bicontinuous functor $F' : \Lambda \mathcal{C} \rightarrow \mathcal{D}$,
+such that $F' \circ i = F$. (Maybe equalities of functors should have been isomorphisms there)
+
+The construction of bicompletions is probably complicated but doable. You probably have to keep on adjoining limits and then colimits
+using presheaves lots of times taking care not to adjoin limits that have already been adjoined.
+
+The above example with monoidal closed categories could also be done using bicompletions - the bicompletion of a symmetric closed category
+is symmetric monoidal closed.
+
+\subsection{Finite Limits and Colimits}
+
+Fullness of the functor into the bicompletion will mean that if the homsets of $\mathcal{C}$ have decidable equality then so do 
+many of the homsets of $\Lambda \mathcal{C}$, I think in the closure of $\mathcal{C}$ inside $\Lambda \mathcal{C}$ 
+under finite products and coproducts. If $A, B, C : \mathcal{C}$ are objects, then 
+$\text{Hom}_{\Lambda \mathcal{C}} (i(A) \amalg i(B), i(C)) \cong \text{Hom}_\mathcal{C} (A, C) \times \text{Hom}_\mathcal{C} (B, C)$,
+so it has decidable equality, and equality in 
+$\text{Hom}_{\Lambda \mathcal{C}} (i(A) \invamalg i(B), i(C))$ should be able to be decided by adjoining
+an object $X$ and maps $f : X \rightarrow A$ and $g : X \rightarrow B$ to $\mathcal{C}$ to make a new
+category $\mathcal{D}$. The maps $f$ and $g$ are both epic in $\mathcal{D}$. Therefore 
+$\text{Hom}_{\Lambda \mathcal{C}} (i(A) \invamalg i(B), i(C)) \cong 
+\text{Hom}_{\Lambda \mathcal{D}} (i(X), i(C)) \cong \text{Hom}_{D} (X, C)$. (This is not a complete proof).
+
+\subsection{Adjunctions}
+
+Suppose $\mathcal{C}$ and $\mathcal{D}$ are bicomplete categories and $F$ is a forgetful functor between them with a 
+left adjoint. (eg. $\mathcal{C} = Ab$, $\mathcal{D} = Grp$). Suppose $\mathcal{C}'$ and $\mathcal{D}'$ are categories
+and there are functors $\mathcal{C}' \rightarrow \mathcal{C}$ and $\mathcal{D}' \rightarrow \mathcal{D}$,
+and $F' : \mathcal{C}' \rightarrow \mathcal{D}'$ is a restriction of $F$. Morally $\mathcal{C}'$ and $\mathcal{D}'$ might be
+small finite diagrams generated by all the homs and objects in a context for example.
+Then $F'$ can be lifted to a bicontinuous map $\Lambda F' : \Lambda \mathcal{C}' \rightarrow \Lambda \mathcal{D}'$.
+The functor $\Lambda{F}'$ will have a left adjoint by the adjoint functor theorem (Maybe there are size issues here).
+This should commute with the adjoint of $F$ (because the functors are bicontinuous and the formula for the adjoint is 
+some sort of colimit). Therefore we can eliminate this adjunctions in a similar way to how we eliminated tensor products 
+in the monoidal category example.
+
+\subsection{Conclusion}
+
+The bicompletion should hopefully be useful to provide some tools to prove equality of morphisms using universal properties,
+or to partially prove them, e.g. in the associativity of polynomials example it could hopefully reduce it to proving
+associativity of natural number addition. It should be able to handle expressions containing finite limits/colimits, adjunctions,
+tensor products etc. all at once.
+
+
+
+\end{document}
