@@ -1,5 +1,4 @@
 import order.galois_connection
-import data.set_like.basic
 
 variables (P : Type) [partial_order P]
 
@@ -194,6 +193,21 @@ def d (B : copresheaf P) : presheaf P :=
 lemma d_mono : monotone (@d P _) :=
 λ A B h p hp q hAq, hp _ (h _ hAq)
 
+example (A : presheaf P) : d (u A) = A :=
+begin
+  dsimp [d, u, coyoneda, yoneda],
+  apply subtype.ext,
+  dsimp,
+  apply funext,
+  intros,
+  simp only [presheaf.le_def, copresheaf.le_def],
+  dsimp,
+  apply le_antisymm,
+  simp [presheaf.le_def],
+  ext,
+  rw [presheaf.le_def],
+end
+
 def gc : galois_connection (@u P _) d :=
 begin
   intros A B,
@@ -358,63 +372,3 @@ lemma completion.supr_def {ι : Sort*} (a : ι → completion P) : (⨆ i : ι, 
 lemma completion.infi_def {ι : Sort*} (a : ι → completion P) : (⨅ i : ι, a i).to_presheaf = 
   (⨅ i, (a i).to_presheaf) :=
 (@gi P _).gc.u_infi
-
-variables {Q : Type} [complete_lattice Q] (f : P → Q) (hf : monotone f)
-
-include hf
-
-def ump : completion P → Q :=
-λ A, ⨆ (p : P) (h : A.to_presheaf p), f p
-
-lemma ump_monotone : monotone (ump f hf) :=
-begin
-  intros A B hAB,
-  dsimp [ump],
-  simp only [supr_le_iff, le_supr_iff],
-  intros x h p hp,
-  apply h,
-  apply hAB,
-  apply hp
-end
-
-lemma ump_le (a : completion P) (x : P) : f x ≤ ump f hf a ↔ a.1 x :=
-begin
-  simp [ump, supr_le_iff, le_supr_iff, infi_le_iff],
-  split,
-  { intros h,
-    
-     },
-  { intros ha p hap,
-    apply hap,
-    exact ha }
-end
-
-lemma ump_infi {ι : Sort*} (a : ι → completion P) : ump₁ f hf (infi a) = ⨅ i, ump₁ f hf (a i) :=
-begin
-  apply le_antisymm,
-  { admit },
-  { simp only [ump₁, umpp, le_supr_iff, supr_le_iff, infi_le_iff, le_infi_iff,
-      to_completion, le_def, yoneda, presheaf.le_def],
-    intros p h B h₂,
-    apply h,
-    intros i hi,
-    apply h₂,
-
-    apply h₂,  }
-end
-
-lemma ump_supr {ι : Sort*} (a : ι → completion P) : ump f hf (supr a) = ⨆ i, ump f hf (a i) :=
-begin
-  apply le_antisymm,
-  { simp only [ump, umpp, le_supr_iff, supr_le_iff, infi_le_iff, le_infi_iff],
-    intros x h₁ y h₂,
-    apply h₂,
-    intros z hz,
-    apply h₁,
-    intro i,
-    apply hz, },
-  { simp only [ump, umpp, le_supr_iff, supr_le_iff, infi_le_iff, le_infi_iff],
-    intros i p h x hx,
-    apply hx,
-    apply p}
-end

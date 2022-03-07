@@ -78,25 +78,36 @@ attribute [irreducible] free_module lift X
 
 def mul : free_module R ℕ →ₗ[R] free_module R ℕ →ₗ[R] free_module R ℕ :=
 lift (λ n, lift (λ m, X (n + m)))
-set_option trace.simplify.rewrite true
+
+-- free_module R ℕ →ₗ[R] free_module R ℕ →ₗ[R] free_module R ℕ →ₗ[R] free_module R ℕ
+
 lemma mul_assoc (p q r : free_module R ℕ) : mul (mul p q) r = mul p (mul q r) :=
-by simp [mul, add_assoc]
+-- by simp [mul, add_assoc]
 
-#print mul_assoc
+-- #print mul_assoc
 
--- show (lcomp (@mul R _)).comp mul p q r = (lcompop (@mul R _)).comp (lcomp.comp mul) p q r,
--- --by congr' 3; ext; simp [lcomp, lcompop, mul, add_assoc]
--- begin
---   congr' 3,
---   apply hom_ext,
---   intro,
---   apply hom_ext,
---   intro,
---   apply hom_ext,
---   intro,
---   dsimp [lcomp, lcompop, mul],
---   rw [lift_X, lift_X, lift_X, lift_X, lift_X, lift_X, lift_X, add_assoc],
--- end
+show (lcomp (@mul R _)).comp mul p q r = (lcompop (@mul R _)).comp (lcomp.comp mul) p q r,
+--by congr' 3; ext; simp [lcomp, lcompop, mul, add_assoc]
+begin
+  congr' 3,
+  apply hom_ext,
+  intro,
+  apply hom_ext,
+  intro,
+  apply hom_ext,
+  intro,
+  dsimp [lcomp, lcompop, mul],
+  rw [lift_X, lift_X, lift_X, lift_X, lift_X, lift_X, lift_X, add_assoc],
+end
 
 lemma mul_comm (p q : free_module R ℕ) : mul p q = mul q p :=
-by simp [mul, add_comm]
+show mul p q = swap mul p q,
+begin
+  refine linear_map.congr_fun _ _,
+  refine linear_map.congr_fun _ _,
+  ext,
+  simp [mul, swap, add_comm],
+
+end
+
+end

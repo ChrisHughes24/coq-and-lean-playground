@@ -1,0 +1,155 @@
+\def\paperversiondraft{draft}
+\def\paperversionblind{blind}
+
+\ifx\paperversion\paperversionblind
+\else
+  \def\paperversion{blind}
+\fi
+
+% !TEX TS-program = pdflatex
+% !TEX encoding = UTF-8 Unicode
+
+% This is a simple template for a LaTeX document using the "article" class.
+% See "book", "report", "letter" for other types of document.
+
+\documentclass[12pt]{article} % use larger type; default would be 10pt
+
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{xargs}
+\usepackage{xparse}
+\usepackage{xifthen, xstring}
+\usepackage{ulem}
+\usepackage{xspace}
+\usepackage{multirow}
+\setlength {\marginparwidth }{2cm}
+\usepackage{todonotes}
+\bibliographystyle{amsalpha}
+\makeatletter
+\font\uwavefont=lasyb10 scaled 652
+\DeclareSymbolFontAlphabet{\mathrm}    {operators}
+\DeclareSymbolFontAlphabet{\mathnormal}{letters}
+\DeclareSymbolFontAlphabet{\mathcal}   {symbols}
+\DeclareMathAlphabet      {\mathbf}{OT1}{cmr}{bx}{n}
+\DeclareMathAlphabet      {\mathsf}{OT1}{cmss}{m}{n}
+\DeclareMathAlphabet      {\mathit}{OT1}{cmr}{m}{it}
+\DeclareMathAlphabet      {\mathtt}{OT1}{cmtt}{m}{n}
+%% \newcommand\colorwave[1][blue]{\bgroup\markoverwith{\lower3\p@\hbox{\uwavefont\textcolor{#1}{\char58}}}\ULon}
+% \makeatother
+
+% \ifx\paperversion\paperversiondraft
+% \newcommand\createtodoauthor[2]{%
+% \def\tmpdefault{emptystring}
+% \expandafter\newcommand\csname #1\endcsname[2][\tmpdefault]{\def\tmp{##1}\ifthenelse{\equal{\tmp}{\tmpdefault}}
+%    {\todo[linecolor=#2!20,backgroundcolor=#2!25,bordercolor=#2,size=\tiny]{\textbf{#1:} ##2}}
+%    {\ifthenelse{\equal{##2}{}}{\colorwave[#2]{##1}\xspace}{\todo[linecolor=#2!10,backgroundcolor=#2!25,bordercolor=#2]{\tiny \textbf{#1:} ##2}\colorwave[#2]{##1}}}}}
+% \else
+% \newcommand\createtodoauthor[2]{%
+% \expandafter\newcommand\csname #1\endcsname[2][\@nil]{}}
+% \fi
+
+
+%%% Examples of Article customizations
+% These packages are optional, depending whether you want the features they provide.
+% See the LaTeX Companion or other references for full information.
+
+%%% PAGE DIMENSIONS
+\usepackage{geometry} % to change the page dimensions
+\geometry{a4paper} % or letterpaper (US) or a5paper or....
+\geometry{margin=1in} % for example, change the margins to 2 inches all round
+% \geometry{landscape} % set up the page for landscape
+%   read geometry.pdf for detailed page layout information
+
+\usepackage{graphicx} % support the \includegraphics command and options
+
+% \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+
+\usepackage[utf8x]{inputenc}
+\usepackage{amssymb}
+\usepackage{listings}
+
+\usepackage{color}
+\definecolor{keywordcolor}{rgb}{0.7, 0.1, 0.1}   % red
+\definecolor{commentcolor}{rgb}{0.4, 0.4, 0.4}   % grey
+\definecolor{symbolcolor}{rgb}{0.0, 0.1, 0.6}    % blue
+\definecolor{sortcolor}{rgb}{0.1, 0.5, 0.1}      % green
+\usepackage{listings}
+
+
+%%% PACKAGES
+\usepackage{inputenc}
+\usepackage{booktabs} % for much better looking tables
+\usepackage{array} % for better arrays (eg matrices) in maths
+\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+
+\usepackage{textcomp}
+
+
+% These packages are all incorporated in the memoir class to one degree or another...
+
+%%% HEADERS & FOOTERS
+\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt} % customise the layout...
+\lhead{\leftmark}\chead{}\rhead{\rightmark}
+\lfoot{}\cfoot{\thepage}\rfoot{}
+
+%%% SECTION TITLE APPEARANCE
+\usepackage{sectsty}
+\allsectionsfont{\sffamily\mdseries\upshape} % (See the fntguide.pdf for font help)
+% (This matches ConTeXt defaults)
+
+%%% ToC (table of contents) APPEARANCE
+\usepackage[nottoc,notlof,notlot]{tocbibind} % Put the bibliography in the ToC
+\usepackage[titles,subfigure]{tocloft} % Alter the style of the Table of Contents
+\renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
+\renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{upgreek}
+\usepackage{tikz-cd}
+\theoremstyle{definition}
+\newtheorem{thm}{Theorem}[subsection]
+\theoremstyle{definition}
+\newtheorem{corol}[thm]{Corollary}
+\theoremstyle{definition}
+\newtheorem{lemma}[thm]{Lemma}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{exmpl}[thm]{Example}
+\usepackage{lscape}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\setcounter{secnumdepth}{4}
+
+\titleformat{\paragraph}
+{\normalfont\normalsize}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}
+{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+%%% END Article customizations
+
+%%% The "real" document content comes below...
+
+\title{Types Abstract}
+\author{Christopher Hughes}
+
+\begin{document}
+
+\section{The problem}
+
+The problem was to interpret a term written in Lean in a linear lambda calculus and then interpret this term
+in a symmetric closed category. Linear lambda calculus can be interpreted in a symmetric monoidal closed category,
+
+
+
+
+\bibliography{references}
+
+\end{document}
