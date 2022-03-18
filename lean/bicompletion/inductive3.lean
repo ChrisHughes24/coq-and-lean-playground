@@ -130,27 +130,6 @@ end
 def id₁ (X : obj₁ 𝒞) : hom₁ X X :=
 id₁_aux ff rfl X
 
--- def comp₁ : Π
---   (f : bicompletion_aux 𝒞 tt)
---   (g : bicompletion_aux 𝒞 tt),
---   part (bicompletion_aux 𝒞 tt)
--- | (@of_cat_hom _ _ A B f) (@of_cat_hom _ _ B' C g) :=
---   ⟨B = B', λ h, by subst h; exact (of_cat_hom₁ (f ≫ g)).1⟩
--- | (@limit_cone_comp _ _ 𝒟 _ F_obj F_hom A B f) g :=
---   do ih ← comp₁ f g, return (by exactI limit_cone_comp F_obj @F_hom A g.cod ih)
--- | f (@colimit_cocone_comp _ _ 𝒟 _ F_obj F_hom A B g) :=
---   do ih ← comp₁ f g, return (by exactI colimit_cocone_comp F_obj @F_hom A g.cod ih)
--- | (@is_colimit _ _ 𝒟 _ F_obj F_hom cocone_obj cocone) g :=
---   let f : Π (A : 𝒟), part (bicompletion_aux 𝒞 tt) := λ A, comp₁ (cocone A) g in
---   ⟨∀ A : 𝒟, (f A).dom, λ h, by exactI @is_colimit _ _ 𝒟 _ F_obj @F_hom cocone_obj 
---     (λ A, (f A).get (h A))⟩
--- | f (@is_limit _ _ 𝒟 _ F_obj F_hom cone_obj cone) :=
---   let f : Π (A : 𝒟), part (bicompletion_aux 𝒞 tt) := λ A, comp₁ f (cone A) in
---   ⟨∀ A : 𝒟, (f A).dom, λ h, by exactI @is_colimit _ _ 𝒟 _ F_obj @F_hom cone_obj 
---     (λ A, (f A).get (h A))⟩
--- using_well_founded { dec_tac := `[admit] }
-
-
 inductive valid_obj₁ : Π (X : obj₁ 𝒞), Prop
 | of_cat_obj (X : 𝒞) : valid_obj₁ (of_cat_obj X)
 | limit_obj {𝒟 : Type} [category.{0} 𝒟] (F_obj : 𝒟 → obj₁ 𝒞) 
@@ -287,34 +266,6 @@ def hom₂ (X Y : obj₂ 𝒞) : Type 1 := { f : hom₁ X.1 Y.1 // valid_hom₁ 
 
 open valid_hom₁
 
--- lemma valid_hom₁_limit_cone_comp {𝒟 : Type} [category.{0} 𝒟] (F_obj : 𝒟 → obj₁ 𝒞)
---   (F_hom : Π {X Y : 𝒟}, (X ⟶ Y) → hom₁ (F_obj X) (F_obj Y)) 
---   (X : 𝒟) {Y : obj₁ 𝒞} (f : hom₁ (F_obj X) Y) 
---   (F_hom_valid : Π {X Y : 𝒟} (f : X ⟶ Y), valid_hom₁ (F_hom f))
---   (f_valid : valid_hom₁ f) 
---   (h : valid_hom₁ (limit_cone_comp₁ F_obj @F_hom X f)) :
---   h == valid_hom₁.limit_cone_comp F_obj @F_hom X f @F_hom_valid f_valid :=
--- @valid_hom₁.rec_on _ _ (λ A B g hg, g == limit_cone_comp₁ F_obj @F_hom X f → 
---   hg == valid_hom₁.limit_cone_comp F_obj @F_hom X f @F_hom_valid f_valid) 
---   _ _ _ _ 
---   begin
---     intros,
---     simp [of_cat_hom₁] at *,  
-    
---   end _ _ _ _ (heq.refl _)
-
--- lemma hom₂_ext_aux {X Y : obj₁ 𝒞} (f : hom₁ X Y) (h₁ : valid_hom₁ f) :
---   ∀ (h₂ : valid_hom₁ f), h₁ = h₂ :=
--- begin
---   induction h₁,
---   { intro h₂, cases h₂, refl },
---   { intro h₂,
---     refine valid_hom₁.rec_on h₂ _ _ _ _ _,
---     { intros X Y f, }
---      }
-
--- end
-
 def of_cat_obj₂ (X : 𝒞) : obj₂ 𝒞 :=
 ⟨of_cat_obj X, valid_obj₁.of_cat_obj _⟩ 
 
@@ -351,10 +302,31 @@ begin
   simp *
 end
 
-
 def colimit_obj₂ (F_obj : 𝒟 → obj₂ 𝒞) 
   (F_hom : Π {X Y : 𝒟}, (X ⟶ Y) → hom₂ (F_obj X) (F_obj Y)) : obj₂ 𝒞 :=
 ⟨colimit_obj₁ (λ X, (F_obj X).1) (λ X Y f, (F_hom f).1), valid_obj₁.colimit_obj _ _ (λ X, (F_obj X).2)⟩
+
+lemma colimit_obj₂_injective {𝒟₁ 𝒟₂ : Type} [i₁ : category 𝒟₁] [i₂ : category 𝒟₂] 
+  {F_obj₁ : 𝒟₁ → obj₂ 𝒞} {F_obj₂ : 𝒟₂ → obj₂ 𝒞} 
+  {F_hom₁ : Π {X Y : 𝒟₁}, (X ⟶ Y) → hom₂ (F_obj₁ X) (F_obj₁ Y)}
+  {F_hom₂ : Π {X Y : 𝒟₂}, (X ⟶ Y) → hom₂ (F_obj₂ X) (F_obj₂ Y)}
+  (h : colimit_obj₂ F_obj₁ @F_hom₁ = colimit_obj₂ F_obj₂ @F_hom₂) : 
+  𝒟₁ = 𝒟₂ ∧ i₁ == i₂ ∧ F_obj₁ == F_obj₂ ∧ @F_hom₁ == @F_hom₂ :=
+begin
+  simp [colimit_obj₂, colimit_obj₁] at h,
+  injection h with h₁ h₂ h₃ h₄,
+  unfreezingI { subst h₁ },
+  rw heq_iff_eq at h₂,
+  unfreezingI { subst h₂ },
+  simp [heq_iff_eq, function.funext_iff, subtype.coe_injective.eq_iff] at h₃,
+  rw [← function.funext_iff] at h₃,
+  dsimp at h₃,
+  subst h₃,
+  simp [heq_iff_eq, function.funext_iff, subtype.coe_injective.eq_iff] at h₄,
+  simp,
+  ext,
+  simp *
+end
 
 def of_cat_hom₂ {X Y : 𝒞} (f : X ⟶ Y) : hom₂ (of_cat_obj₂ X) (of_cat_obj₂ Y) :=
 ⟨of_cat_hom₁ f, valid_hom₁.of_cat_hom _⟩ 
@@ -578,8 +550,6 @@ def hom₂_of_cat_obj_rec_on
   end  
   rfl
 
-
-
 def hom₂_limit_obj_rec_on
   {motive : Π {𝒟 : Type} [category 𝒟] {F_obj : 𝒟 → obj₂ 𝒞}
     {F_hom : Π {X Y : 𝒟}, (by exactI X ⟶ Y) → hom₂ (F_obj X) (F_obj Y)} {Y : obj₂ 𝒞}, 
@@ -606,70 +576,95 @@ def hom₂_limit_obj_rec_on
     (cone : Π (X : 𝒟), hom₂ (by exactI limit_obj₂ G_obj @G_hom) (F_obj X))
     (ih_cone : Π (X : 𝒟), by exactI motive (cone X)),
       by exactI motive (is_limit₂ F_obj @F_hom (limit_obj₂ G_obj @G_hom) cone)) :
-  motive f := sorry
--- @hom₂.rec_on 𝒞 _ (λ A B f, ∀ (h : A = limit_obj₂ F_obj @F_hom),
---   motive (show hom₂ (limit_obj₂ F_obj @F_hom) B, from eq.rec_on h f))
---   (limit_obj₂ F_obj @F_hom) Y f 
---   begin 
---     intros,
---     simp [limit_obj₂, of_cat_obj₂, limit_obj₁] at h,
---     contradiction
---   end  
---   begin 
---     intros ℰ _ G_obj G_hom ih₁ A B g ih₂ h,
---     simp [limit_obj₂, of_cat_obj₂, limit_obj₁] at h,
---     injection h with h₁ h₂ h₃ h₄,
---     unfreezingI { subst h₁ },
---     rw [heq_iff_eq] at h₂,
---     unfreezingI { subst h₂ },
---     dsimp at h₄,
---     dsimp,
+  motive f :=
+@hom₂.rec_on 𝒞 _ (λ A B f, ∀ (h : A = limit_obj₂ F_obj @F_hom),
+  motive (show hom₂ (limit_obj₂ F_obj @F_hom) B, from eq.rec_on h f))
+  (limit_obj₂ F_obj @F_hom) Y f 
+  begin 
+    intros,
+    simp [limit_obj₂, of_cat_obj₂, limit_obj₁] at h,
+    contradiction
+  end  
+  begin 
+    introsI ℰ _ G_obj G_hom ih₁ A B g ih₂ h,
+    unfreezingI { rcases (limit_obj₂_injective h) with ⟨rfl, h₁, h₂, h₃⟩ },
+    unfreezingI { subst h₁, subst h₂, subst h₃ },
+    exact limit_cone_comp _ _ _ _
+  end 
+  begin
+    introsI 𝒟 _ F_obj F_hom ih₁ A B g ih₂ h,
+    subst h,
+    exact colimit_cocone_comp _ _ _ _ _ _ (ih₂ rfl)
+  end 
+  begin
+    introsI 𝒟 _ F_obj F_hom ih₁ cone_obj cone ih₂ h,
+    subst h,
+    exact is_limit _ _ _ _ _ (λ A, ih₂ A rfl),
+  end 
+  begin 
+    intros,
+    simp [colimit_obj₂, of_cat_obj₂, limit_obj₂] at h,
+    contradiction
+  end  
+  rfl
 
---   end 
---   begin
---     introsI 𝒟 _ F_obj F_hom ih₁ A B g ih₂ h,
---     subst h,
---     exact colimit_cocone_comp _ _ _ _ (ih₂ rfl)
---   end 
---   begin
---     introsI 𝒟 _ F_obj F_hom ih₁ cone_obj cone ih₂ h,
---     subst h,
---     exact is_limit _ _ _ _ (λ A, ih₂ A rfl),
---   end 
---   begin 
---     intros,
---     simp [colimit_obj₂, of_cat_obj₂] at h,
---     contradiction
---   end  
---   rfl
-
-def hom₂_colimit_obj_rec_on
+@[elab_as_eliminator] def hom₂_colimit_obj_rec_on
   {motive : Π {𝒟 : Type} [category 𝒟] {F_obj : 𝒟 → obj₂ 𝒞}
     {F_hom : Π {X Y : 𝒟}, (by exactI X ⟶ Y) → hom₂ (F_obj X) (F_obj Y)} {Y : obj₂ 𝒞}, 
     hom₂ (by exactI colimit_obj₂ F_obj @F_hom) Y → Sort*}
   {𝒟 : Type} [category 𝒟] {F_obj : 𝒟 → obj₂ 𝒞}
   {F_hom : Π {X Y : 𝒟}, (X ⟶ Y) → hom₂ (F_obj X) (F_obj Y)} {Y : obj₂ 𝒞}
-  (f : hom₂ (limit_obj₂ F_obj @F_hom) Y)
-  (limit_cone_comp : Π {𝒟 : Type} [category 𝒟] (F_obj : 𝒟 → obj₂ 𝒞)
-    (F_hom : Π {X Y : 𝒟}, (by exactI X ⟶ Y) → hom₂ (F_obj X) (F_obj Y))
-    (X : 𝒟) {Y : obj₂ 𝒞} (f : hom₂ (F_obj X) Y),
-      by exactI motive (limit_cone_comp₂ F_obj @F_hom X f))
+  (f : hom₂ (colimit_obj₂ F_obj @F_hom) Y)
   (colimit_cocone_comp : Π {𝒟 : Type} [category 𝒟] (F_obj : 𝒟 → obj₂ 𝒞)
     (F_hom : Π {X Y : 𝒟}, (by exactI X ⟶ Y) → hom₂ (F_obj X) (F_obj Y))
-    (X : 𝒟)
-    {ℰ : Type} [category ℰ] (G_obj : ℰ → obj₂ 𝒞)
-    (G_hom : Π {X Y : ℰ}, (by exactI X ⟶ Y) → hom₂ (G_obj X) (G_obj Y))
-    (f : hom₂ (by exactI limit_obj₂ G_obj @G_hom) (F_obj X))
+    (X : 𝒟) 
+    {ℰ : Type} [category ℰ] {G_obj : ℰ → obj₂ 𝒞}
+    {G_hom : Π {X Y : ℰ}, (by exactI X ⟶ Y) → hom₂ (G_obj X) (G_obj Y)} 
+    (f : hom₂ (by exactI colimit_obj₂ G_obj @G_hom) (F_obj X))
     (ih_f : by exactI motive f),
-      by exactI motive (colimit_cocone_comp₂ F_obj @F_hom X f))
+      by exactI motive (by exactI colimit_cocone_comp₂ F_obj @F_hom X f))
   (is_limit : Π {𝒟 : Type} [category 𝒟] (F_obj : 𝒟 → obj₂ 𝒞)
     (F_hom : Π {X Y : 𝒟}, (by exactI X ⟶ Y) → hom₂ (F_obj X) (F_obj Y))
-    {ℰ : Type} [category ℰ] (G_obj : ℰ → obj₂ 𝒞)
-    (G_hom : Π {X Y : ℰ}, (by exactI X ⟶ Y) → hom₂ (G_obj X) (G_obj Y))
-    (cone : Π (X : 𝒟), hom₂ (by exactI limit_obj₂ G_obj @G_hom) (F_obj X))
+    {ℰ : Type} [category ℰ] {G_obj : ℰ → obj₂ 𝒞}
+    {G_hom : Π {X Y : ℰ}, (by exactI X ⟶ Y) → hom₂ (G_obj X) (G_obj Y)}
+    (cone : Π (X : 𝒟), hom₂ (by exactI colimit_obj₂ G_obj @G_hom) (F_obj X))
     (ih_cone : Π (X : 𝒟), by exactI motive (cone X)),
-      by exactI motive (is_limit₂ F_obj @F_hom (limit_obj₂ G_obj @G_hom) cone)) :
-  motive f
+      by exactI motive (by exactI is_limit₂ F_obj @F_hom _ cone))
+  (is_colimit : Π {𝒟 : Type} [category 𝒟] (F_obj : 𝒟 → obj₂ 𝒞)
+    (F_hom : Π {X Y : 𝒟}, (by exactI X ⟶ Y) → hom₂ (F_obj X) (F_obj Y)) 
+    (cocone_obj : obj₂ 𝒞) (cocone : Π (X : 𝒟), hom₂ (F_obj X) cocone_obj),
+      by exactI motive (is_colimit₂ F_obj @F_hom cocone_obj cocone)) :
+  motive f :=
+@hom₂.rec_on 𝒞 _ (λ A B f, ∀ (h : A = colimit_obj₂ F_obj @F_hom),
+  motive (show hom₂ (colimit_obj₂ F_obj @F_hom) B, from eq.rec_on h f))
+  (colimit_obj₂ F_obj @F_hom) Y f 
+  begin 
+    intros,
+    simp [colimit_obj₂, of_cat_obj₂, colimit_obj₁] at h,
+    contradiction
+  end 
+  begin 
+    intros,
+    simp [colimit_obj₂, of_cat_obj₂, colimit_obj₁, limit_obj₁, limit_obj₂] at h,
+    contradiction
+  end
+  begin
+    introsI 𝒟 _ F_obj F_hom ih₁ A B f ih₂ h,
+    subst h,
+    exact colimit_cocone_comp _ _ _ _ (ih₂ rfl)
+  end
+  begin
+    introsI 𝒟 _ F_obj F_hom ih₁ cone_obj cone ih₂ h,
+    subst h,
+    exact is_limit _ _ _ (λ X, ih₂ X rfl)
+  end
+  begin
+    introsI ℰ _ G_obj G_hom ih₁ cocone_obj cocone ih₂ h,
+    unfreezingI { rcases (colimit_obj₂_injective h) with ⟨rfl, h₁, h₂, h₃⟩ },
+    unfreezingI { subst h₁, subst h₂, subst h₃ },
+    exact is_colimit _ _ _ _
+  end
+  rfl
 
 def comp₂ {X Y : obj₂ 𝒞} (f : hom₂ X Y) : Π {Z : obj₂ 𝒞}, hom₂ Y Z → hom₂ X Z :=
 hom₂.rec_on f 
@@ -689,8 +684,14 @@ hom₂.rec_on f
   end
   begin
     introsI 𝒟 _ F_obj F_hom ih₁ A B f ih₂ Z g,
-    refine ih₂ _,
-    admit
+    revert ih₂ A,
+    refine hom₂_colimit_obj_rec_on g _ _ _,
+    { introsI ℰ _ G_obj G_hom C ℱ _ H_obj H_hom ih₃ ih₄ A g ih₂,
+      refine colimit_cocone_comp₂ _ _ _ (ih₄ _ g @ih₂) },
+    { introsI ℰ _ G_obj G_hom ℱ _ H_obj H_hom ih₃ ih₄ A g ih₂,
+      exact is_limit₂ _ _ _ (λ X, ih₄ _ _ g @ih₂) },
+    { introsI ℰ _ G_obj G_hom cocone_obj cocone A g ih₂,
+      exact ih₂ (cocone _) }
   end 
   begin
     introsI 𝒟 _ F_obj F_hom ih₁ cone_obj cone ih₂ Z g,
