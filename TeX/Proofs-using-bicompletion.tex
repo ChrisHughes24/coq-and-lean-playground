@@ -74,6 +74,8 @@
 \definecolor{symbolcolor}{rgb}{0.0, 0.1, 0.6}    % blue
 \definecolor{sortcolor}{rgb}{0.1, 0.5, 0.1}      % green
 \usepackage{listings}
+\def\lstlanguagefiles{lstlean.tex}
+\lstset{language=lean}
 
 
 %%% PACKAGES
@@ -125,6 +127,7 @@
 \usepackage{lscape}
 \usepackage{hyperref}
 \usepackage{titlesec}
+\newcommand{\invamalg}{\mathbin{\text{\rotatebox[origin=c]{180}{$\amalg$}}}}
 
 \setcounter{secnumdepth}{4}
 
@@ -137,19 +140,65 @@
 
 %%% The "real" document content comes below...
 
-\title{Types Abstract}
+\title{Proofs Using Bicompletions}
 \author{Christopher Hughes}
 
 \begin{document}
 
-\section{The problem}
+\section{Bicompletion}
 
-The problem was to interpret a term written in Lean in a linear lambda calculus and then interpret this term
-in a symmetric closed category. Linear lambda calculus can be interpreted in a symmetric monoidal closed category,
+The bicompletion of a small category $\mathcal{C}$ is a category $\Lambda \mathcal{C}$ with a functor
+$j : \mathcal{C} \to \Lambda \mathcal{C}$ containing all small colimits and limits, and with 
+the property that for any bicomplete category $\mathcal{D}$, with a functor $F : \mathcal{C} \to \mathcal{D}$,
+there is a unique bicontinuous functor $F' : \mathcal{C} \to \mathcal{D}$ such that
+$j \circ F' \cong F$. 
+
+The functor $j$ is fully faithful. Everything in this document will be proven from the fully faithfulness of
+$j$ and the universal property of $\Lambda \mathcal{C}$.
+
+There is a map from $[\mathcal{C}^{op}, Set] \to \Lambda \mathcal{C}$, and from 
+$[\mathcal{C}, Set]^{op} \to \Lambda \mathcal{C}$, definable using the universal property
+of the presheaf category as the (co)completion of a small category.
+
+The bicompletion of the opposite category is the opposite of the bicompletion. i.e.
+$\Lambda {\mathcal{C}^{op}} \cong (\Lambda \mathcal{C})^{op}$.
+
+% \section{Closed structure}
+
+% If $\mathcal{C}$ is a closed category then $\Lambda \mathcal{C}$ is also closed.
+% There is a hom functor $(\mathcal{C}^{op} \times \mathcal{C})\to \mathcal{C}$.
+% This can be extended to a map $\Lambda (\mathcal{C}^{op} \times \mathcal{C})\to \Lambda \mathcal{C}$.
+% Since the product of bicomplete categories is also bicomplete, and the bicompletion
+% of the opposite is the opposite of the bicompletion, there is a functor 
+% $\Lambda (\mathcal{C}^{op} \times \mathcal{C})\to \Lambda \mathcal{C}
 
 
 
+% \subsection{Adjunctions}
+% Let $F$ be a functor $\mathcal{C} \rightarrow \mathcal{D}$, where $\mathcal{D}$ and $\mathcal{D}$
+% are small categories. Then $F^{*} : \Lambda\mathcal{C} \to \Lambda\mathcal{D}$
+% Then $F^{*}$ has a left adjoint. Proof. 
+% We can define a functor $h : \mathcal{D} \to [C^{op}, Set]$ by setting 
+% $h(d, c) := \text{hom}_{\mathcal{C}}(F(c), d)$.
 
-\bibliography{references}
+% The UMP of $[D^{op}, Set]$ as the cocompletion of $\mathcal{D}$, lets us extend $h$
+% to a functor $
+
+% $F \circ i : [\mathcal{C}, Set]^{op} \to \mathcal{D}$ is continuous. Therefore, since 
+% $[\mathcal{C}, Set]^{op}$ is cototal, there is a left adjoint $L$ to $F \circ i$.
+% Define the left adjoint of $F$ to be $i \circ L$. 
+% Then $\text{hom}((i \circ L)(X), Y)$
+
+% \section{Totality}
+
+% The category $\Lambda \mathcal{C}$ is total. (Not sure this is true).
+
+% Define the left adjoint $L$ of $y : \Lambda \mathcal{C} \to [\Lambda\mathcal{C}^{op}, Set]$ to 
+% take a presheaf $F$ to $i(F \circ j)$, where $i$ is the canonical map 
+% $[\mathcal{C}, Set]^{op} \to \Lambda \mathcal{C}$.
+
+% Proof of isomorphism
+
+% $\text{hom}_{\Lambda\mathcal{C}}(i (F \circ j), X)$
 
 \end{document}

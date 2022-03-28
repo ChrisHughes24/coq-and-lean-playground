@@ -145,39 +145,5 @@
 
 \begin{document}
 
-\section{Cocompletion of a Category}
-If $\mathcal{C}$ is a small category then $\mathcal{C}^{op} \rightarrow \text{Type}$ is its cocompletion.
-Intuitively this is because every element of $\mathcal{C}^{op} \rightarrow \text{Type}$ is a small colimit of 
-a diagram in $\mathcal{C}$. If $\mathcal{C}$ is a large category, then the cocompletion is the subcategory 
-of $\mathcal{C}^{op} \rightarrow \text{Type}$ consisting of elements which are a small colimit of objects in $\mathcal{C}$.
-(Check this works, does the map from this subcategory preserve colimits)? We use the notation $\Sigma {C}$ for the cocompletion
-of $\mathcal{C}$ and $\Pi \mathcal{C}$ for the completion.
-
-\section{Partial Cocompletion of a Category}
-
-We have large categories $\mathcal{C}$ and $\mathcal{D}$ and a fully faithful cocontinuous functor $F : \mathcal{C} \to \mathcal{D}$,
-such that everything in $\mathcal{D}$ is a limit of objects in $\mathcal{C}$. Then $\Sigma F$ is a cocomplete category such that
-there is a cocontinuous map $i_\mathcal{C} : \mathcal{C} to \Sigma F$, and a functor 
-$i_\mathcal{D} : \mathcal{D} \to \Sigma F$ such that $i_\mathcal{D} \circ F = i_\mathcal{C}$, and for any category $\mathcal{E}$
-with a cocontinous map $j_\mathcal{C} : \mathcal{C} \to \mathcal{E}$ and a map $j_\mathcal{D} : \mathcal{D} \to \mathcal{E}$
-such that $j_\mathcal{D} \circ F = j_\mathcal{C}$, then there is a unique cocontinuous map $\Sigma F \to \mathcal{E}$ making everything
-commute.
-
-% https://tikzcd.yichuanshen.de/#N4Igdg9gJgpgziAXAbVABwnAlgFyxMJZABgBoAmAXVJADcBDAGwFcYkQAdDgW3pwAsAxk2ABhAL4hxpdJlz5CKchWp0mrdl14DhjYABFJ02djwEiy4qoYs2iThwDKWAOa8ABADEpMkBlMKFqQALNbqdg7aQiIAokaqMFAu8ESgAGYAThDcSGQgOBBIAIw0Nhr2ngAUghA1YACUIDSM9ABGMIwACnJmiiCMMGk4TSD8MPRQ7DgA7hBjEwg0OPRYjOz8EBAA1j7pWTmIeQVIyv1tHd0B5vYDQyNlETV1uyCZ2cVLhYinLe1dPYF7BlXPxhsZXvtcp8kABmUrhdhPczgt4HEr5L4wlGQ77QxBwkDtMCTRDBACczXO-yufWBLlB9wR9i4MAAHlg4Dg4O4AITuJGEcSUcRAA
-\begin{tikzcd}
-    &  & \Sigma F \arrow[dddd, "\exists ! cocon"', bend left=49] \\
-    &  &                                                         \\
-\mathcal{C} \arrow[rr, "F(cocon)", two heads, hook] \arrow[rruu, "cocon"] \arrow[rrdd, "cocon"] &  & \mathcal{D} \arrow[uu] \arrow[dd]                       \\
-    &  &                                                         \\
-    &  & \mathcal{E}                                            
-\end{tikzcd}
-
-When we construct $\Sigma F$ it should be obvious that $i_\mathcal{D}$ is fully faithful and continuous. It will be constructed
-as a subcategory of $PSh(\mathcal{D})$.
-
-\subsection{Constructing the Partial Cocompletion}
-
-We define an adjunction between $\Sigma \mathcal{D}$ and $\Pi \mathcal{D}$. It is inspired by Isbell conjugation, if $F$ is the 
-identity functor, then it is Isbell conjugation.
 
 \end{document}

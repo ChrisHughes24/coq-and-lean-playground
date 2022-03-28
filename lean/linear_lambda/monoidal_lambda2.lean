@@ -145,6 +145,7 @@ inductive type3 (cT : Type) : Type
 | id {} : type3
 | tensor : type3 → type3 → type3
 
+
 def type3.of_type : type cT → type3 cT 
 | (type.const T) := type3.const T
 | (type.arrow T₁ T₂) := type3.arrow (type3.of_type T₁) (type3.of_type T₂)
