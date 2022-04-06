@@ -25,9 +25,10 @@ def X (a : α) : free_module R α := finsupp.single a 1
 by simp [extend, X]
 
 @[ext] lemma hom_ext {f g : free_module R α →ₗ[R] M} (h : ∀ a, f (X a) = g (X a)) : f = g :=
-by ext; simp [*, X] at *
+by rw [← extend_X' f, function.comp]; simp only [h, extend_X']
 
 variable (R)
+
 def map (f : α → β) : free_module R α →ₗ[R] free_module R β :=
 extend (X ∘ f)
 
@@ -40,7 +41,6 @@ hom_ext begin
   rw [map, map, map],
   intro i,
   rw [extend_X, linear_map.comp_apply, extend_X, extend_X],
-
 end
 
 @[simp] lemma extend_comp (f : M →ₗ[R] N) (g : α → M) :
@@ -114,7 +114,7 @@ begin
   intro,
   apply hom_ext,
   intro,
-  dsimp [mul],
+  dsimp [mul, lcomp, lcompop],
   rw [extend_X, extend_X, extend_X, extend_X, extend_X, extend_X, extend_X, add_assoc],
 end
 

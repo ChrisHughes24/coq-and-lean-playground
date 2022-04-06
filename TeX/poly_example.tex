@@ -145,120 +145,300 @@
 
 \begin{document}
 
-\section{Free Module}
+\section{Representable Functor}
 
-We start by defining the free module. The free module $F(\alpha)$ over a Type $\alpha$ is the module
-such that there is a natural isomorphism of functors, natural in both $M$ and $\alpha$.
+Let $\mathcal{C}$ be a category and let $F : C \to \text{Type}$
+be a co-presheaf on $\mathcal{C}$. Then we will define a corepresentation of
+$F$ to be the following.
+
+\begin{enumerate}
+  \item An object $X$ of $\mathcal{C}$
+  \item An element $x$ of $F(X)$
+  \item For every object $Y$ of $\mathcal{C}$, a map $e_Y : F(Y) \to \mathcal{C}(X, Y)$
+  \item For any object $Y$ of $\mathcal{C}$, and every element $f : F(Y)$, $F(e_Y(f))(x) = f$
+  \item For any object $Y$ of $\mathcal{C}$, and every morphism $f : \mathcal{C}(X, Y)$,
+    $e_Y(F(f)(x)) = f$
+\end{enumerate}
+
+A representation of a functor $F : C^{op} \to \text{Type}$ is the dual concept to a corepresentable
+functor. We define it explicitly here.
+
+\begin{enumerate}
+  \item An object $X$ of $\mathcal{C}$
+  \item An element $x$ of $F(X^{op})$
+  \item For every object $Y$ of $\mathcal{C}$, a map $r_Y : F(Y^{op}) \to \mathcal{C}(Y, X)$
+  \item For any object $Y$ of $\mathcal{C}$, and every element $f : F(Y^{op})$, $F(r_Y^{op}(f))(x) = f$.
+  \item For any object $Y$ of $\mathcal{C}$, and every morphism $f : \mathcal{C}(Y, X)$,
+  $r_Y(F(f^{op})(x)) = f$
+\end{enumerate}
+
+We now prove that this definition is equivalent to the more usual definition. We need to show that
+
 
 \begin{equation}
-\text{Hom}(F(\alpha), M) \cong \text{Hom}(\alpha, \text{Forget}(M))
+\mathcal{C}(X, -) \cong F
 \end{equation}
 
-\subsection{Definition in Lean}
+Given a map $f : \mathcal{C}(X, Y)$, then $F(f)(x)$ is an element of $F(Y)$. This gives one 
+direction of the isomorphism. The other direction is given by $e_Y$, the map that is
+Axiom 3 of our definition of corepresentation. Axioms 4 and 5 say that these are two sided inverses
+of each other. We only need to prove naturality.
 
-The universal property in Lean is stated using the following four definitions or lemmas.
+To prove naturality we need to prove that given $f : \mathcal{C}(X, Y)$ and $g : \mathcal{C}(Y, Z)$,
+that $F(g \circ f)(x) = F(g)(F(f)(x))$. This follows from functoriality of $F$.
 
-\defn
+\lemma {Extensionality}
+If $X$ is a corepresentation of $F$ then any two maps $f, g : \mathcal{C}(X, Y)$ are equal
+if $F(f)(x) = F(g)(x)$. This follows from the fact that $f \mapsto F(f)(x)$ is injective
+because it is an isomorphism.
 
-There is a map \begin{equation}X : \text{Hom}(\alpha, Forget(F(\alpha)))\end{equation}
+Extensionality is in fact equivalent to Axiom 5 of a corepresentation and could be used
+instead of Axiom 5 as part of the definition.
+
+\section{Adjunction}
+
+Given a functor $F : \mathcal{C} \to \mathcal{D}$ we will define a left adjoint of $F$ to 
+a corepresention of $\mathcal{D}(F(A),-)$ for every object $A$ of $\mathcal{C}$. We will call
+this map of object sets $G$. We can now prove that $G$ is a functor. Explicitly,
+this is the following data.
+
+\begin{enumerate}
+  \item A map of object set $G : \text{Obj}(\mathcal{D})\to \text{Obj}(\mathcal{C})$
+  \item For every object $X$ of $\mathcal{D}$, a map $\eta_X : \mathcal{D}(X, F(G(X)))$
+  \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$, 
+    a map of sets $e_{X,Y} : \mathcal{D}(X, F(Y)) \to \mathcal{C}(G(X), Y)$
+  \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$, 
+    and every element $f : \mathcal{D}(X, F(Y))$, $F(e_{X,Y}(f)) \circ \eta_X = f$
+  \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$, 
+  and every element $f : \mathcal{C}(G(X), Y)$, $e_{X,Y}(F(f) \circ \eta_X) = f$
+\end{enumerate}
 
 
-\defn
+\lemma {Extensionality}
+Two maps $f,g : \mathcal{C}(G(X), Y)$ are equal iff $F(f) \circ \eta_X = F(g) \circ \eta_X$.
 
-There is a map \begin{equation} extend : \text{Hom}(\alpha, \text{Forget}(M)) \rightarrow \text{Hom}(F(\alpha),M) \end{equation}
+We can prove that $G$ is in fact a functor. 
+Given objects $A$ and $B$ of $\mathcal{D}$ and a map $f : \mathcal{D}(, B)$,A
+then define $G(f)$ to be $e_{A,G(B)}(\eta_B \circ f)$.
 
-There are two properties proven 
+Then 
+\begin{equation}
+  G(\text{id}_A) = e_{A,G(A)}(\eta_A \circ \text{id}_A) = 
+e_{A,G(A)}(F (\text{id}_{G(A)}) \circ \eta_A) = \text{id}_{G(A)}
+\end{equation}
 
-\lemma\label{extendX}
-  
-Let $f$ be a map of sets, $\text{Hom}(\alpha, \text{Forget}(M))$. Then
-  \begin{equation}
-    Forget(extend (f)) \circ X = f 
-  \end{equation}
-
-
-\lemma{Extensionality}
-  
-Let $f$ and $g$ be module homomorphisms, $\text{Hom}(F(\alpha), M)$. Then these two maps are equal whenever
-  \begin{equation}
-    Forget(f) \circ X = Forget(g) \circ X
-  \end{equation}
-
-The universal property follows from these two definitions and two lemmas.
-We need to prove the natural isomorphism of functors 
-$\text{Hom}(F(\alpha), M) \cong \text{Hom}(\alpha, \text{Forget}(M))$.
-
-The map $\text{Hom}(F(\alpha), M) \rightarrow \text{Hom}(\alpha, \text{Forget}(M))$ is given by composition
-with $X$. If $f : \text{Hom}(F(\alpha), M)$, then 
-$Forget(f) \circ X : \text{Hom}(\alpha, \text{Forget}(M))$.
-
-The other direction of the isomorphism is $extend$.
-
-To prove this is an isomorphism we need to prove two equalities.
-
-To prove this is an isomorphism we need to prove that for any
- $f : \text{Hom}(\alpha, Forget(M))$, $Forget(extend (f)) \circ X = f$ and
-for any $f : \text{Hom}(F(\alpha), M)$, $extend (Forget(f) \circ X) = f$. 
-The first equality is part of our Lean definition. The second we prove by applying
-our extensionality lemma so we have to prove $Forget(extend (Forget(f) \circ X)) \circ X = Forget(f) \circ X$.
-Apply the first lemma to the right hand side proves the equality.
-
-We also need to prove that $F$ is a functor. Given  Types $\alpha, \beta$ and a map $f : \alpha \to \beta$,
-the map $F(f) : \text{Hom}(F(\alpha), F(\beta))$ is given by $F(f) = extend (X \circ f)$.
-
-To prove $F(id) = id$ we apply the extensionality lemma and we now need to prove 
-$Forget(extend (X \circ id)) \circ X = Forget(id) \circ X$. This is a direction application 
-of Lemma \ref{extendX}.
-
-To prove $F(g \circ f) = F(g) \circ F(f)$, then first apply extensionality and 
-we need to prove $Forget(extend (X \circ g \circ f)) \circ X = 
-  Forget(extend (X \circ g) \circ extend (X \circ f)) \circ X$. Three applications of Lemma \ref{extendX}
-  can prove this. The first three equalities in the below expression follow from Lemma \ref{extendX},
-  the final one is functoriality of the forgetful functor.
+Also for $f : \mathcal{D}(A, B)$ and $g : \mathcal{C}(B, C)$
+then we apply the extensionality lemma
 \begin{equation}
   \begin{aligned}
-    && Forget(extend (X \circ g \circ f)) \circ X \\
-  = && X \circ g \circ f \\
-  = && Forget(extend (X \circ g)) \circ X \circ f \\
-  = && Forget(extend (X \circ g)) \circ Forget(extend (X \circ f)) \circ X \\
-  = && Forget(extend (X \circ g) \circ extend (X \circ f)) \circ X
+     && F(G(g \circ f)) \circ \eta_A \\
+   = && F(e_{A, G(C)}(\eta_C \circ g \circ f)) \circ \eta_A \\
+   = && \eta_C \circ g \circ f \\
+   = && F(e_{A, G(B)}(\eta_C \circ g)) \circ \eta_B \circ f \\
+   = && F(e_{A, G(B)}(\eta_C \circ g)) \circ F(e_{B, G(C)}(\eta_B \circ f)) \\
+   = && F(G(g) \circ G(f))
   \end{aligned}
 \end{equation}
 
-We now prove naturality in both arguments. There are two equalities we need to prove
+This works similarly for right adjoints.
 
-\lemma 
-For any Types $\alpha, \beta$, modules $M, N$ and any map $f : \beta \to \alpha$, and any module homomorphism 
-$g : \text{Hom}(M, N)$, and any map $h : \text{Hom}(F(\alpha), M)$
+\section{Method for Checking Equalities}
 
+The basic method for checking equalities of morphisms is to write every morphism in terms of 
+the universal property whenever possible, and then use extensionality and then repeatedly 
+rewrite using Axiom 4 of the corepresentable or representable functor axioms.
+
+\section{Polynomial Associativity Example}
+
+The Free Module functor which we will call $F$ is the left adjoint to the forgetful 
+functor $\text{Forget} : \text{Mod}_R \to \text{Type}$.
+
+We will call the map $A \to \text{Forget}(F(A))$, $X$ and use subscripts for application.
+We might not always write the forgetful functor explicitly.
+
+The map $(A \to \text{Forget}(B)) \to {\text{Mod}_R}(F(A), B)$ will be called $extend$.
+
+We will define multiplication on $F(\mathbb{N})$ as a morphism of Type 
 \begin{equation}
-  Forget(g \circ h \circ F(f)) \circ X = Forget(g) \circ Forget(h) \circ X \circ f
+  \text{Mod}_R(F(\mathbb{N}), [F(\mathbb{N}), F(\mathbb{N})])
+\end{equation} 
+Square brackets indicate the hom object in $\text{Mod}_R$.
+
+The definition of multiplication is as follows
+\begin{equation}
+  extend (m \mapsto extend (n \mapsto X_{m + n}))
 \end{equation}
 
-Replacing $F(f)$ by its definition $extend (X \circ f)$ and applying Lemma \ref{extendX} will prove this.
+We would like to use our extensionality lemma to prove associativity of multiplication.
+In order to do this, we have to state associativity as an equality of morphisms,
+as opposed to an equality of elements of the free module. We use two operations
+to do this, both of which are versions of linear map composition as a linear map.
 
-The other direction of naturality is given bibliography
-
-\lemma
-For any Types $\alpha, \beta$, modules $M, N$ and any map $f : \beta \to \alpha$, and any module homomorphism 
-$g : \text{Hom}(M, N)$, and any map $h : \text{Hom}(\alpha, Forget(M))$.
-
-\begin{equation}
-  extend(Forget (g) \circ h \circ f) = g \circ extend (h) \circ F(f)
-\end{equation}
-
-We can apply extensionality to see that it suffices to prove
-\begin{equation}
-  Forget(extend(Forget (g) \circ h \circ f)) \circ X = Forget(g \circ extend (h) \circ F(f)) \circ X
-\end{equation}
-
-We apply Lemma \ref{extendX} to the left hand side and replace $F(f)$ with its definition and 
-then we see it suffices to prove
+For modules $A$, $B$, and $C$ we have two versions of linear map 
+composition which we call $R$ and $L$.
 
 \begin{equation}
-    Forget (g) \circ h \circ f = Forget(g) \circ Forget(extend (h)) Forget(extend (X \circ f))) \circ X
+  \begin{aligned}
+    R : \text{Mod}_R([A, B], [[B,C],[A,C]]) \\
+     L : \text{Mod}_R([B, C], [[A,B],[A,C]])
+  \end{aligned}
 \end{equation}
 
-Rewriting twice with Lemma \ref{extendX} on the right hand side proves the desired result.
+Then the map $a, b, c \mapsto \text{mul} (\text{mul} (a)(b))(c)$ can be written as 
+\begin{equation}
+  \text{Forget}(R)(\text{mul}) \circ \text{mul}
+\end{equation}
+
+Similarly the map $a, b, c \mapsto \text{mul} (a)(\text{mul} (b)(c))$ can be written as
+
+\begin{equation}
+  \text{Forget}(L) (\text{mul}) \circ (R \circ \text{mul})
+\end{equation}
+
+These linear maps both have Type $\text{Mod}_R(F(\mathbb{N}), [F(\mathbb{N}), F(\mathbb{N})])$.
+
+We can apply the extensionality lemma three times (using functional extensionality as well).
+
+We then have to check that for any $i, j, k : \mathbb{N}$ that
+
+\begin{equation}
+  (R)(\text{mul}) \circ \text{mul}(X_i)(X_j)(X_k) = (L) (\text{mul}) \circ (R \circ \text{mul})(X_i)(X_j)(X_k)
+\end{equation}
+
+Unfolding the definitions of linear map composition and applying Axiom 4 several times gives
+the following equality.
+
+\begin{equation}
+  X_{(i + j) + k} = X_{i + (j + k)}
+\end{equation}
+
+The associativity of multiplication of polynomials was reduced to the associativity of addition
+of natural numbers.
+
+\section{Potential Improvements}
+
+Having to unfold the definition of linear map composition is unsatisfying as well as having to 
+directly apply funext. Probably it would be better to express the universal property as 
+a representation of a functor $\text{Mod}_R \to \text{Mod}_R$ and to develop some
+theory of representable functors in enriched categories.
+
+Given a functor $F : \text{Mod}_R \to \text{Mod}_R$, then if $X$ is a corepresentation of $F$,
+the object $[X, A]$ is a representation of the functor $B \mapsto [B, F(A)]$. The hom object 
+inherits a universal property from $X$ and linear composition can probably be written in terms of this 
+universal property.
+
+% We start by defining the free module. The free module $F(\alpha)$ over a Type $\alpha$ is the module
+% such that there is a natural isomorphism of functors, natural in both $M$ and $\alpha$.
+
+% \begin{equation}
+% \text{Hom}(F(\alpha), M) \cong \text{Hom}(\alpha, \text{Forget}(M))
+% \end{equation}
+
+% \subsection{Definition in Lean}
+
+% The universal property in Lean is stated using the following four definitions or lemmas.
+
+% \defn
+
+% There is a map \begin{equation}X : \text{Hom}(\alpha, Forget(F(\alpha)))\end{equation}
+
+
+% \defn
+
+% There is a map \begin{equation} extend : \text{Hom}(\alpha, \text{Forget}(M)) \rightarrow \text{Hom}(F(\alpha),M) \end{equation}
+
+% There are two properties proven 
+
+% \lemma\label{extendX}
+  
+% Let $f$ be a map of sets, $\text{Hom}(\alpha, \text{Forget}(M))$. Then
+%   \begin{equation}
+%     Forget(extend (f)) \circ X = f 
+%   \end{equation}
+
+
+% \lemma{Extensionality}
+  
+% Let $f$ and $g$ be module homomorphisms, $\text{Hom}(F(\alpha), M)$. Then these two maps are equal whenever
+%   \begin{equation}
+%     Forget(f) \circ X = Forget(g) \circ X
+%   \end{equation}
+
+% The universal property follows from these two definitions and two lemmas.
+% We need to prove the natural isomorphism of functors 
+% $\text{Hom}(F(\alpha), M) \cong \text{Hom}(\alpha, \text{Forget}(M))$.
+
+% The map $\text{Hom}(F(\alpha), M) \rightarrow \text{Hom}(\alpha, \text{Forget}(M))$ is given by composition
+% with $X$. If $f : \text{Hom}(F(\alpha), M)$, then 
+% $Forget(f) \circ X : \text{Hom}(\alpha, \text{Forget}(M))$.
+
+% The other direction of the isomorphism is $extend$.
+
+% To prove this is an isomorphism we need to prove two equalities.
+
+% To prove this is an isomorphism we need to prove that for any
+%  $f : \text{Hom}(\alpha, Forget(M))$, $Forget(extend (f)) \circ X = f$ and
+% for any $f : \text{Hom}(F(\alpha), M)$, $extend (Forget(f) \circ X) = f$. 
+% The first equality is part of our Lean definition. The second we prove by applying
+% our extensionality lemma so we have to prove $Forget(extend (Forget(f) \circ X)) \circ X = Forget(f) \circ X$.
+% Apply the first lemma to the right hand side proves the equality.
+
+% We also need to prove that $F$ is a functor. Given  Types $\alpha, \beta$ and a map $f : \alpha \to \beta$,
+% the map $F(f) : \text{Hom}(F(\alpha), F(\beta))$ is given by $F(f) = extend (X \circ f)$.
+
+% To prove $F(id) = id$ we apply the extensionality lemma and we now need to prove 
+% $Forget(extend (X \circ id)) \circ X = Forget(id) \circ X$. This is a direction application 
+% of Lemma \ref{extendX}.
+
+% To prove $F(g \circ f) = F(g) \circ F(f)$, then first apply extensionality and 
+% we need to prove $Forget(extend (X \circ g \circ f)) \circ X = 
+%   Forget(extend (X \circ g) \circ extend (X \circ f)) \circ X$. Three applications of Lemma \ref{extendX}
+%   can prove this. The first three equalities in the below expression follow from Lemma \ref{extendX},
+%   the final one is functoriality of the forgetful functor.
+% \begin{equation}
+%   \begin{aligned}
+%     && Forget(extend (X \circ g \circ f)) \circ X \\
+%   = && X \circ g \circ f \\
+%   = && Forget(extend (X \circ g)) \circ X \circ f \\
+%   = && Forget(extend (X \circ g)) \circ Forget(extend (X \circ f)) \circ X \\
+%   = && Forget(extend (X \circ g) \circ extend (X \circ f)) \circ X
+%   \end{aligned}
+% \end{equation}
+
+% We now prove naturality in both arguments. There are two equalities we need to prove
+
+% \lemma 
+% For any Types $\alpha, \beta$, modules $M, N$ and any map $f : \beta \to \alpha$, and any module homomorphism 
+% $g : \text{Hom}(M, N)$, and any map $h : \text{Hom}(F(\alpha), M)$
+
+% \begin{equation}
+%   Forget(g \circ h \circ F(f)) \circ X = Forget(g) \circ Forget(h) \circ X \circ f
+% \end{equation}
+
+% Replacing $F(f)$ by its definition $extend (X \circ f)$ and applying Lemma \ref{extendX} will prove this.
+
+% The other direction of naturality is given bibliography
+
+% \lemma
+% For any Types $\alpha, \beta$, modules $M, N$ and any map $f : \beta \to \alpha$, and any module homomorphism 
+% $g : \text{Hom}(M, N)$, and any map $h : \text{Hom}(\alpha, Forget(M))$.
+
+% \begin{equation}
+%   extend(Forget (g) \circ h \circ f) = g \circ extend (h) \circ F(f)
+% \end{equation}
+
+% We can apply extensionality to see that it suffices to prove
+% \begin{equation}
+%   Forget(extend(Forget (g) \circ h \circ f)) \circ X = Forget(g \circ extend (h) \circ F(f)) \circ X
+% \end{equation}
+
+% We apply Lemma \ref{extendX} to the left hand side and replace $F(f)$ with its definition and 
+% then we see it suffices to prove
+
+% \begin{equation}
+%     Forget (g) \circ h \circ f = Forget(g) \circ Forget(extend (h)) Forget(extend (X \circ f))) \circ X
+% \end{equation}
+
+% Rewriting twice with Lemma \ref{extendX} on the right hand side proves the desired result.
 
 \end{document}
