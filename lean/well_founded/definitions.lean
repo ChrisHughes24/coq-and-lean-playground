@@ -1,5 +1,6 @@
 import category_theory.limits.preserves.basic
 import category_theory.full_subcategory
+import category_theory.yoneda
 
 open category_theory
 
@@ -42,20 +43,17 @@ variables {𝓓} [preorder (hom_union 𝓓)]
 def lt_cat [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : Type :=
 { X : 𝓓 // (of_hom (𝟙 X)) < (of_hom f) }
 
-instance [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : 
-  category_struct (lt_cat f) :=
+instance [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : category_struct (lt_cat f) :=
 { hom := λ X Y, { g : X.1 ⟶ Y.1 // of_hom g < of_hom f },
   id := λ X, ⟨𝟙 X.1, X.2⟩,
   comp := λ X Y Z f g, ⟨f.1 ≫ g.1, well_founded_extension'.comp_lt _ _ _ f.2 g.2⟩ }
 
-instance [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : 
-  category (lt_cat f) := 
+instance [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : category (lt_cat f) := 
 { id_comp' := λ X Y f, subtype.eq (category.id_comp f.1),
   comp_id' := λ X Y f, subtype.eq (category.comp_id f.1),
   assoc' := λ W Y X Z f g h, subtype.eq (category.assoc f.1 g.1 h.1) }
 
-def of_lt_cat [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : 
-  lt_cat f ⥤ 𝓓 :=
+def of_lt_cat [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : lt_cat f ⥤ 𝓓 :=
 { obj := subtype.val,
   map := λ _ _, subtype.val,
   map_id' := λ _, rfl,
@@ -64,8 +62,7 @@ def of_lt_cat [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) :
 def le_cat [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : Type :=
 { X : 𝓓 // (of_hom (𝟙 X)) ≤ (of_hom f) }
 
-instance [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : 
-  category_struct (le_cat f) :=
+instance [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : category_struct (le_cat f) :=
 { hom := λ X Y, { g : X.1 ⟶ Y.1 // of_hom g ≤ of_hom f },
   id := λ X, ⟨𝟙 X.1, X.2⟩,
   comp := λ X Y Z f g, ⟨f.1 ≫ g.1, well_founded_extension'.comp_le _ _ _ f.2 g.2⟩ }
@@ -75,8 +72,7 @@ instance [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : category (l
   comp_id' := λ X Y f, subtype.eq (category.comp_id f.1),
   assoc' := λ W Y X Z f g h, subtype.eq (category.assoc f.1 g.1 h.1) }
 
-def of_le_cat [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : 
-  le_cat f ⥤ 𝓓 :=
+def of_le_cat [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) : le_cat f ⥤ 𝓓 :=
 { obj := subtype.val,
   map := λ _ _, subtype.val,
   map_id' := λ _, rfl,
@@ -85,19 +81,11 @@ def of_le_cat [well_founded_extension' 𝓓] {A B : 𝓓} (f : A ⟶ B) :
 open well_founded_extension'
 
 class well_founded_extension (F : 𝓒 ⥤ 𝓓) extends well_founded_extension' 𝓓 :=
-( presheaf : Π {A B : 𝓓} (f : A ⟶ B) (X Y : le_cat f) (g : X ⟶ Y), 
-      )
-
--- structure well_founded_extension : Type :=
--- ( rel : 𝓓 → 𝓓 → Prop )
--- ( wf : well_founded rel )
--- ( is_presheaf : 𝓓 → bool )
--- ( rel_hom : Π {X Y : 𝓓}, (X ⟶ Y) → 𝓓 )
--- ( rel_hom_id : ∀ (X : 𝓓), rel_hom (𝟙 X) = X )
--- ( rel_hom_comp : ∀ {X Y Z A : 𝓓} (f : X ⟶ Y) (g : Y ⟶ Z),
---     rel (rel_hom f) A → rel (rel_hom g) A → rel (rel_hom (f ≫ g)) A )
--- ( to_presheaf : ∀ (A X Y : 𝓓) (hXA : rel X A) (hYA : rel Y A)
---      (f : X ⟶ Y), 
---      )
-
-
+( presheaf : Π {A B : 𝓓} (f : A ⟶ B) (h : is_presheaf (of_hom f) = tt) (X Y : le_cat f),
+    (X ⟶ Y) ↪ (((of_lt_cat f).op ⋙ (of_le_cat f ⋙ yoneda).obj X) ⟶ 
+                ((of_lt_cat f).op ⋙ (of_le_cat f ⋙ yoneda).obj Y)))
+( copresheaf : Π {A B : 𝓓} (f : A ⟶ B) (h : is_presheaf (of_hom f) = ff) (X Y : le_cat f),
+    (X ⟶ Y) ↪ (((of_lt_cat f).op ⋙ 
+      (of_le_cat f ⋙ coyoneda.right_op ⋙ functor.op_hom 𝓓 Type).obj X) ⟶ 
+                ((of_lt_cat f).op ⋙ 
+      (of_le_cat f ⋙ coyoneda.right_op ⋙ functor.op_hom 𝓓 Type).obj Y)))
