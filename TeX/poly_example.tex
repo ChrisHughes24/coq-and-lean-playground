@@ -147,7 +147,7 @@
 
 \section{Representable Functor}
 
-Let $\mathcal{C}$ be a category and let $F : C \to \text{Type}$
+Let $\mathcal{C}$ be a category and let $F : C \to \text{Set}$
 be a co-presheaf on $\mathcal{C}$. Then we will define a corepresentation of
 $F$ to be the following.
 
@@ -160,15 +160,15 @@ $F$ to be the following.
     $e_Y(F(f)(x)) = f$
 \end{enumerate}
 
-A representation of a functor $F : C^{op} \to \text{Type}$ is the dual concept to a corepresentable
+A representation of a functor $F : C^{op} \to \text{Set}$ is the dual concept to a corepresentable
 functor. We define it explicitly here.
 
 \begin{enumerate}
   \item An object $X$ of $\mathcal{C}$
   \item An element $x$ of $F(X^{op})$
   \item For every object $Y$ of $\mathcal{C}$, a map $r_Y : F(Y^{op}) \to \mathcal{C}(Y, X)$
-  \item For any object $Y$ of $\mathcal{C}$, and every element $f : F(Y^{op})$, $F(r_Y^{op}(f))(x) = f$.
-  \item For any object $Y$ of $\mathcal{C}$, and every morphism $f : \mathcal{C}(Y, X)$,
+  \item For any object $Y$ of $\mathcal{C}$, and every element $f \in F(Y^{op})$, $F(r_Y^{op}(f))(x) = f$.
+  \item For any object $Y$ of $\mathcal{C}$, and every morphism $f \in \mathcal{C}(Y, X)$,
   $r_Y(F(f^{op})(x)) = f$
 \end{enumerate}
 
@@ -179,16 +179,16 @@ We now prove that this definition is equivalent to the more usual definition. We
 \mathcal{C}(X, -) \cong F
 \end{equation}
 
-Given a map $f : \mathcal{C}(X, Y)$, then $F(f)(x)$ is an element of $F(Y)$. This gives one 
+Given a map $f \in \mathcal{C}(X, Y)$, then $F(f)(x)$ is an element of $F(Y)$. This gives one 
 direction of the isomorphism. The other direction is given by $e_Y$, the map that is
 Axiom 3 of our definition of corepresentation. Axioms 4 and 5 say that these are two sided inverses
 of each other. We only need to prove naturality.
 
-To prove naturality we need to prove that given $f : \mathcal{C}(X, Y)$ and $g : \mathcal{C}(Y, Z)$,
+To prove naturality we need to prove that given $f \in \mathcal{C}(X, Y)$ and $g \in \mathcal{C}(Y, Z)$,
 that $F(g \circ f)(x) = F(g)(F(f)(x))$. This follows from functoriality of $F$.
 
 \lemma {Extensionality}
-If $X$ is a corepresentation of $F$ then any two maps $f, g : \mathcal{C}(X, Y)$ are equal
+If $X$ is a corepresentation of $F$ then any two maps $f, g \in \mathcal{C}(X, Y)$ are equal
 if $F(f)(x) = F(g)(x)$. This follows from the fact that $f \mapsto F(f)(x)$ is injective
 because it is an isomorphism.
 
@@ -204,18 +204,18 @@ this is the following data.
 
 \begin{enumerate}
   \item A map of object set $G : \text{Obj}(\mathcal{D})\to \text{Obj}(\mathcal{C})$
-  \item For every object $X$ of $\mathcal{D}$, a map $\eta_X : \mathcal{D}(X, F(G(X)))$
+  \item For every object $X$ of $\mathcal{D}$, a map $\eta_X \in \mathcal{D}(X, F(G(X)))$
   \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$, 
     a map of sets $e_{X,Y} : \mathcal{D}(X, F(Y)) \to \mathcal{C}(G(X), Y)$
   \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$, 
-    and every element $f : \mathcal{D}(X, F(Y))$, $F(e_{X,Y}(f)) \circ \eta_X = f$
+    and every element $f \in \mathcal{D}(X, F(Y))$, $F(e_{X,Y}(f)) \circ \eta_X = f$
   \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$, 
-  and every element $f : \mathcal{C}(G(X), Y)$, $e_{X,Y}(F(f) \circ \eta_X) = f$
+  and every element $f \in \mathcal{C}(G(X), Y)$, $e_{X,Y}(F(f) \circ \eta_X) = f$
 \end{enumerate}
 
 
 \lemma {Extensionality}
-Two maps $f,g : \mathcal{C}(G(X), Y)$ are equal iff $F(f) \circ \eta_X = F(g) \circ \eta_X$.
+Two maps $f,g \in \mathcal{C}(G(X), Y)$ are equal iff $F(f) \circ \eta_X = F(g) \circ \eta_X$.
 
 We can prove that $G$ is in fact a functor. 
 Given objects $A$ and $B$ of $\mathcal{D}$ and a map $f : \mathcal{D}(, B)$,A
@@ -251,7 +251,7 @@ rewrite using Axiom 4 of the corepresentable or representable functor axioms.
 \section{Polynomial Associativity Example}
 
 The Free Module functor which we will call $F$ is the left adjoint to the forgetful 
-functor $\text{Forget} : \text{Mod}_R \to \text{Type}$.
+functor $\text{Forget} : \text{Mod}_R \to \text{Set}$.
 
 We will call the map $A \to \text{Forget}(F(A))$, $X$ and use subscripts for application.
 We might not always write the forgetful functor explicitly.
@@ -279,8 +279,8 @@ composition which we call $R$ and $L$.
 
 \begin{equation}
   \begin{aligned}
-    R : \text{Mod}_R([A, B], [[B,C],[A,C]]) \\
-     L : \text{Mod}_R([B, C], [[A,B],[A,C]])
+    R \in \text{Mod}_R([A, B], [[B,C],[A,C]]) \\
+     L \in \text{Mod}_R([B, C], [[A,B],[A,C]])
   \end{aligned}
 \end{equation}
 
@@ -299,7 +299,7 @@ These linear maps both have Type $\text{Mod}_R(F(\mathbb{N}), [F(\mathbb{N}), F(
 
 We can apply the extensionality lemma three times (using functional extensionality as well).
 
-We then have to check that for any $i, j, k : \mathbb{N}$ that
+We then have to check that for any $i, j, k \in \mathbb{N}$ that
 
 \begin{equation}
   (R)(\text{mul}) \circ \text{mul}(X_i)(X_j)(X_k) = (L) (\text{mul}) \circ (R \circ \text{mul})(X_i)(X_j)(X_k)
