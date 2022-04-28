@@ -24,6 +24,9 @@ def X (a : α) : free_module R α := finsupp.single a 1
 @[simp] lemma extend_X (f : α → M) (a : α) : extend f (X a : free_module R α) = f a :=
 by simp [extend, X]
 
+@[simp] lemma extend_X' (f : free_module R α →ₗ[R] M) : extend (f ∘ X) = f :=
+by ext; simp [extend, X]
+
 @[ext] lemma hom_ext {f g : free_module R α →ₗ[R] M} (h : ∀ a, f (X a) = g (X a)) : f = g :=
 by rw [← extend_X' f, function.comp]; simp only [h, extend_X']
 
@@ -124,8 +127,11 @@ begin
   refine linear_map.congr_fun _ _,
   refine linear_map.congr_fun _ _,
   ext,
-  simp [mul, swap, add_comm],
-
+  simp [mul, swap, add_comm]
 end
+
+
+
+@[derive module R] def matrix : Type := free_module
 
 end

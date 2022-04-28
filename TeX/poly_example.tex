@@ -156,8 +156,7 @@ $F$ to be the following.
   \item An element $x$ of $F(X)$
   \item For every object $Y$ of $\mathcal{C}$, a map $e_Y : F(Y) \to \mathcal{C}(X, Y)$
   \item For any object $Y$ of $\mathcal{C}$, and every element $f : F(Y)$, $F(e_Y(f))(x) = f$
-  \item For any object $Y$ of $\mathcal{C}$, and every morphism $f : \mathcal{C}(X, Y)$,
-    $e_Y(F(f)(x)) = f$
+  \item For any two morphisms $f, g : \mathcal{C}(X, Y)$, if $F(f)(x) = F(g)(x)$ then $f = g$.
 \end{enumerate}
 
 A representation of a functor $F : C^{op} \to \text{Set}$ is the dual concept to a corepresentable
@@ -168,12 +167,12 @@ functor. We define it explicitly here.
   \item An element $x$ of $F(X^{op})$
   \item For every object $Y$ of $\mathcal{C}$, a map $r_Y : F(Y^{op}) \to \mathcal{C}(Y, X)$
   \item For any object $Y$ of $\mathcal{C}$, and every element $f \in F(Y^{op})$, $F(r_Y^{op}(f))(x) = f$.
-  \item For any object $Y$ of $\mathcal{C}$, and every morphism $f \in \mathcal{C}(Y, X)$,
-  $r_Y(F(f^{op})(x)) = f$
+  \item For any two morphisms $f, g : \mathcal{C}(Y, X)$, if $F(f^{op})(x) = F(g^{op})(x)$ then $f = g$.
 \end{enumerate}
 
-We now prove that this definition is equivalent to the more usual definition. We need to show that
-
+We now prove that this definition is equivalent to the more usual definition.
+The usual definition is a pair of an object $X$ of $\mathcal{C}$ and 
+the following isomorphism of functors.
 
 \begin{equation}
 \mathcal{C}(X, -) \cong F
@@ -181,19 +180,137 @@ We now prove that this definition is equivalent to the more usual definition. We
 
 Given a map $f \in \mathcal{C}(X, Y)$, then $F(f)(x)$ is an element of $F(Y)$. This gives one 
 direction of the isomorphism. The other direction is given by $e_Y$, the map that is
-Axiom 3 of our definition of corepresentation. Axioms 4 and 5 say that these are two sided inverses
-of each other. We only need to prove naturality.
+Axiom 3 of our definition of corepresentation. The fact that these two are two sided inverses
+of each other is given by Axiom 4, for one direction and the other direction, i.e.
+proving $e_Y(F(f)(x)) = f$, is given by applying extensionality,
+so it suffices to check $F(e_Y(F(f)(x)))(x) = F(f)(x)$. Then Axiom 4 proves the equality.
 
-To prove naturality we need to prove that given $f \in \mathcal{C}(X, Y)$ and $g \in \mathcal{C}(Y, Z)$,
-that $F(g \circ f)(x) = F(g)(F(f)(x))$. This follows from functoriality of $F$.
+\subsection{Examples of Representable Functors in Lean}
 
-\lemma {Extensionality}
-If $X$ is a corepresentation of $F$ then any two maps $f, g \in \mathcal{C}(X, Y)$ are equal
-if $F(f)(x) = F(g)(x)$. This follows from the fact that $f \mapsto F(f)(x)$ is injective
-because it is an isomorphism.
+\subsubsection{Free Module}
+We'll show the definition of the universal property in Lean as well and how each part corresponds to each
+of the five things above. The free module is over a set $S$ is the corepresentation of the functor 
+$M \mapsto \text{Hom}_{Set}(S, \text{Forget}(M))$, from $\text{Mod} \to \text{Set}$.
 
-Extensionality is in fact equivalent to Axiom 5 of a corepresentation and could be used
-instead of Axiom 5 as part of the definition.
+1) An object $X$ of $\mathcal{C}$
+\begin{lstlisting}
+@[derive add_comm_group, derive module R]
+def free_module : Type :=
+\end{lstlisting}
+The free module over a Type \lstinline{α} is an object in the category of \lstinline{R}
+modules. This is a Type and a \lstinline{module R}, which in this particular implementation
+are not bundled.
+
+
+2) An element $x$ of $F(X)$
+\begin{lstlisting}
+def X (a : α) : free_module R α :=
+\end{lstlisting}
+This is the canonical map \lstinline{α} to \lstinline{free_module R α}.
+
+3) For every object $Y$ of $\mathcal{C}$, a map $e_Y : F(Y) \to \mathcal{C}(X, Y)$
+\begin{lstlisting}
+def extend (f : α → M) : free_module R α →ₗ[R] M :=
+\end{lstlisting}
+This is the canonical way of extending a map \lstinline{α → M} to a map 
+\lstinline{free_module R α →ₗ[R] M}.
+
+4) For any object $Y$ of $\mathcal{C}$, and every element $f : F(Y)$, $F(e_Y(f))(x) = f$
+\begin{lstlisting}
+@[simp] lemma extend_X (f : α → M) (a : α) : extend f (X a : free_module R α) = f a :=
+\end{lstlisting}
+This lemma says that when you extend a map on a basis to a map on the whole module,
+
+5) For any two morphisms $f, g : \mathcal{C}(X, Y)$, if $F(f)(x) = F(g)(x)$ then $f = g$.
+\begin{lstlisting}
+@[ext] lemma hom_ext {f g : free_module R α →ₗ[R] M} (h : ∀ a, f (X a) = g (X a)) : f = g :=
+\end{lstlisting}
+
+\subsubsection{Product and Coproduct of Abelian Groups}
+
+Given two abelian (additive) groups, \lstinline{A} and \lstinline {B}, 
+the universal property of the product is given by the following.
+The product of abelian groups $A$ and $B$ is the representation
+of the functor $\text{Ab}(-, A) \times \text{Ab}(-, B)$, from
+$\text{Ab}^{op}$ to $\text{Set}$.
+
+1) The object is the product of sets \lstinline{A × B} with the obvious
+group structure.
+
+2) There are two projection maps \lstinline{fst : A × B →+ A} and 
+\lstinline{snd : A × B →+ B}. (The types \lstinline{A} and \lstinline{B}
+are both explicit arguments to each of these definitions).
+
+3) Given two maps \lstinline{C →+ A} and \lstinline{C →+ B}, we can make a map
+\lstinline{C →+ A × B}
+\begin{lstlisting}
+def prod (f : C →+ A) (g : C →+ B) : C →+ A × B :=
+\end{lstlisting}
+
+4) We have two lemmas relating \lstinline{fst} and \lstinline{prod} and \lstinline{snd}
+and \lstinline{prod}.
+\begin{lstlisting}
+lemma fst_comp_prod (f : C →+ A) (g : C →* B) : (fst A B).comp (f.prod g) = f :=
+  
+lemma snd_comp_prod (f : C →+ A) (g : C →* B) : (snd A B).comp (f.prod g) = g :=
+\end{lstlisting}
+
+5) Two maps into the product are equal if each component is equal
+\begin{lstlisting}
+lemma hom_ext {f g : C →+ A × B}
+  (h1 : (fst A B).comp f = (fst A B).comp g) 
+  (h2 : (snd A B).comp f = (snd A B).comp g) : f = g :=
+\end{lstlisting}
+
+The coproduct of abelian groups is the same object as the product, 
+but with a different universal property. The coproduct of $A$ and $B$
+is the corepresentation of the functor $\text{Ab}(A, -) \times \text{Ab}(B, -)$
+from $\text{Ab} \to \text{Set}$.
+
+1) The object is the product of sets \lstinline{A × B} with the obvious
+group structure.
+
+2) There are two embeddings \lstinline{inl : A →+ A × B} and 
+\lstinline{inr : B →+ A × B}. (The types \lstinline{A} and \lstinline{B}
+are both explicit arguments to each of these definitions).
+
+3) Given two maps \lstinline{A →+ C} and \lstinline{B →+ C}, we can make a map
+\lstinline{A × B →+ C}.
+\begin{lstlisting}
+def coprod (f : A →+ C) (g : B →+ C) : A × B →+ C :=
+\end{lstlisting}
+
+4) We have two lemmas relating \lstinline{inl} and \lstinline{coprod} and \lstinline{inr}
+and \lstinline{coprod}.
+\begin{lstlisting}
+lemma coprod_comp_inl (f : A →+ C) (g : B →+ C) : (f.coprod g).comp (inl A B) = f :=
+
+lemma coprod_comp_inr (f : A →+ C) (g : B →+ C) : (f.coprod g).comp (inr A B) = g :=
+\end{lstlisting}
+
+5) We have an extensionality lemma saying two maps out of the coproduct are equal 
+if they are equal after composition with each embedding
+\begin{lstlisting}
+lemma hom_ext {f g : A × B →+ C}
+  (h1 : f.comp (inl A B) = g.comp (inl A B)) 
+  (h2 : f.comp (inr A B) = g.comp (inr A B)) : f = g :=
+\end{lstlisting}
+
+\subsubsection{Integers}
+The integers are the initial ring. So they are the corepresention of the 
+constant functor sending every ring to the set with one element.
+
+1) The object is the Type of integers with the normal ring structure.
+
+2) This part is not defined in Lean. There is no real use for it, it would just be an element of 
+the unit type.
+
+3) This is the canonical map from the integers into any ring.
+
+4) This part is not defined in Lean, if it was it would just be an equality of two 
+elements of the unit type. This is not useful.
+
+5) There is a lemma saying that any two maps from the integers into a particular ring are equal.
 
 \section{Adjunction}
 
@@ -209,13 +326,8 @@ this is the following data.
     a map of sets $e_{X,Y} : \mathcal{D}(X, F(Y)) \to \mathcal{C}(G(X), Y)$
   \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$, 
     and every element $f \in \mathcal{D}(X, F(Y))$, $F(e_{X,Y}(f)) \circ \eta_X = f$
-  \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$, 
-  and every element $f \in \mathcal{C}(G(X), Y)$, $e_{X,Y}(F(f) \circ \eta_X) = f$
+  \item $f,g \in \mathcal{C}(G(X), Y)$ are equal iff $F(f) \circ \eta_X = F(g) \circ \eta_X$
 \end{enumerate}
-
-
-\lemma {Extensionality}
-Two maps $f,g \in \mathcal{C}(G(X), Y)$ are equal iff $F(f) \circ \eta_X = F(g) \circ \eta_X$.
 
 We can prove that $G$ is in fact a functor. 
 Given objects $A$ and $B$ of $\mathcal{D}$ and a map $f : \mathcal{D}(, B)$,A
