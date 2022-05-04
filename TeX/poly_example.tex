@@ -310,7 +310,39 @@ the unit type.
 4) This part is not defined in Lean, if it was it would just be an equality of two 
 elements of the unit type. This is not useful.
 
-5) There is a lemma saying that any two maps from the integers into a particular ring are equal.
+5) There is a lemma saying that for any ring \lstinline{R} any two maps from the integers into \lstinline{R}
+are equal.
+
+\subsubsection{Polynomials}
+The polynomial ring over a commutative ring $R$ is the corepresentation of the functor 
+$S \mapsto S \times \text{CommRing}(R, S)$.
+
+1) The object is the polynomial ring \lstinline{polynomial R}, with the obvious ring structure.
+
+2) There is a ring homomorphism \lstinline{C : R →+* polynomial R}, and an element 
+\lstinline{X : polynomial R}
+
+3) There is an evaluation homomorphism to evaluate a polynomial of \lstinline{R} in 
+an arbitrary commutative ring \lstinline{S} given an element of \lstinline{S} and 
+a ring homomorphism \lstinline{R →+* S}.
+\begin{lstlisting}
+def eval₂ (f : R →+* S) (x : S) : polynomial R →+* S :=
+\end{lstlisting}
+
+4) There are two lemmas saying what the evaluation map does to both \lstinline{X} and 
+\lstinline{C}.
+\begin{lstlisting}
+lemma eval₂_X : eval₂ f x X = x :=
+
+lemma eval₂_comp_C : (eval₂ f x).comp C = f :=
+\end{lstlisting}
+
+5) There is a lemma stating that two ring homomorphisms out of the polynomial ring are 
+equal if they are equal on \lstinline{X} and equal on \lstinline{C}.
+\begin{lstlisting}
+lemma hom_ext {f g : polynomial R →+* S} 
+  (h1 : f X = g X) (h2 : f.comp C = g.comp C) : f = g :=
+\end{lstlisting}
 
 \section{Adjunction}
 
@@ -357,10 +389,57 @@ This works similarly for right adjoints.
 \section{Method for Checking Equalities}
 
 The basic method for checking equalities of morphisms is to write every morphism in terms of 
-the universal property whenever possible, and then use extensionality and then repeatedly 
+the universal property whenever possible, and then use extensionality as many times
+as possible and then repeatedly 
 rewrite using Axiom 4 of the corepresentable or representable functor axioms.
 
-\section{Polynomial Associativity Example}
+\subsection{Examples of Checking Equalities}
+
+\subsubsection{Polynomial Example}
+We demonstrate how to prove that given a polynomial
+\lstinline{p} over a commutative ring \lstinline{R}, commutative rings
+\lstinline{S} and \lstinline{T}, ring homs,
+\lstinline{f : R →+* S} and \lstinline{g : S →+* T} and \lstinline{x : T},
+that 
+\begin{lstlisting}
+eval₂ g x (map f p) = eval₂ (g.comp f) x p
+\end{lstlisting}
+
+Here, \lstinline{map f} is the canonical map \lstinline{polynomial R →+* polynomial S}
+given by extending the ring homomorphism \lstinline{f}.
+
+The first step is to write this equality as an equality of morphisms. So we should try to prove
+\begin{lstlisting}
+(eval₂ g x).comp (map f) = eval₂ (g.comp f) x
+\end{lstlisting}
+
+Then we write the morphism \lstinline{map} using the universal property. 
+\lstinline{map f} is equal to \lstinline {eval₂ (f.comp C) X}.
+
+We now have to prove
+\begin{lstlisting}
+(eval₂ g x).comp (eval₂ (f.comp C) X) = eval₂ (g.comp f) x
+\end{lstlisting}
+
+We can apply the extensionality theorem for maps out of the polynomial ring.
+We have two equalities to prove
+\begin{lstlisting}
+((eval₂ g x).comp (eval₂ (f.comp C) X)) X = eval₂ (g.comp f) x X
+\end{lstlisting}
+and 
+\begin{lstlisting}
+((eval₂ g x).comp (eval₂ (f.comp C) X)).comp C = (eval₂ (g.comp f) x X).comp C
+\end{lstlisting}
+
+We will focus on the first equalities. Using the theorem about how \lstinline{eval₂}
+computes on \lstinline{X} three times, we can simplify the equality to \lstinline{x = x} which is true 
+by reflexivity.
+
+For the second equality we can use the theorem about how \lstinline{eval₂}
+computes on \lstinline{C}. Applying it three times gives the equality
+(and associativity of composition) \lstinline{g.comp f = g.comp f}, which is true by reflexivity.
+
+\subsubsection{Polynomial Associativity Example}
 
 The Free Module functor which we will call $F$ is the left adjoint to the forgetful 
 functor $\text{Forget} : \text{Mod}_R \to \text{Set}$.
