@@ -22,7 +22,7 @@ constant eval₂ (f : R →+* S) (x : S) : polynomial R →+* S
 
 @[simp] constant eval₂_C (f : R →+* S) (x : S) (r : R): eval₂ f x (C r) = f r
 
-constant hom_ext {f g : polynomial R →+* S} (h1 : f X = g X) 
+@[ext] constant hom_ext {f g : polynomial R →+* S} (h1 : f X = g X) 
   (h2 : f.comp C = g.comp C) : f = g
 
 def map (f : R →+* S) : polynomial R →+* polynomial S :=
