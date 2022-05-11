@@ -1,8 +1,8 @@
 [package]
 name = "coq-and-lean-playground"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.39.1"
+lean_version = "leanprover-community/lean:3.42.1"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "024aef0bfd346863ad81efae4426c2ed161c8d69"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "83bc3b9ce9b13910b57bda6b56222495ebd31c2f"}
