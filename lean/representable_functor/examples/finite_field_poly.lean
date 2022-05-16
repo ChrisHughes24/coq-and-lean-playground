@@ -29,8 +29,8 @@ by conv_rhs { rw [← desc_comp_of I f hf] }; refl
 @[ext] constant hom_ext {f g : rquotient R I →+* S} 
   (h : f.comp (of I) = g.comp (of I)) : f = g
 
-example : ℤ →+* R := int.cast_ring_hom R
 end rquotient
+
 open polynomial
 
 noncomputable example : rquotient (polynomial (rquotient ℤ (λ _ : unit, 3))) 

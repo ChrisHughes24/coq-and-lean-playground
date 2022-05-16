@@ -11,7 +11,7 @@ constant free_group (α : Type) : Type
 
 namespace free_group
 
-variables {α G : Type} [group G] 
+variables {α G : Type} [group G]
 
 constant X : α → free_group α
 

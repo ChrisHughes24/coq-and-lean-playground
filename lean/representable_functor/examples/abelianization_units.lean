@@ -21,7 +21,7 @@ by ext; refl
 
 @[simp] lemma of_restrict (x : G) : of (restrict f x) = f x := rfl
 
-lemma hom_ext {f g : G →* units M} (h : of.comp f = of.comp g) : f = g :=
+@[ext] lemma hom_ext {f g : G →* units M} (h : of.comp f = of.comp g) : f = g :=
 begin
   ext x,
   exact monoid_hom.congr_fun h x
@@ -104,8 +104,6 @@ variables {G M : Type} [group G] [comm_monoid M] (f : G →* M)
 example : abelianization.desc (units.restrict f) = 
   units.restrict (abelianization.desc f) := 
 begin
-  refine abelianization.hom_ext _,
-  refine units.hom_ext _,
-  refine monoid_hom.ext _,
-  simp
+  ext; simp,
+
 end

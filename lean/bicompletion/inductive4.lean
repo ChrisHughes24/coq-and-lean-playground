@@ -172,7 +172,7 @@ bicompletion_tt_rec_on f
       exact ⟨Π (X : ℰ), (ih₄ X ih₂ A).dom, 
         λ h, is_limit G_obj @G_hom B (λ X, (ih₄ X ih₂ A).get (h X))⟩ },
     { introsI ℰ _ G_obj G_hom cocone_obj cocone _ g ih₂ A,
-      exact ih₂ (cocone A) },
+      exact ih₂ (cocone _) },
     { intros A f _,
       exact colimit_cocone_comp₂ F_obj @F_hom A f }
   end

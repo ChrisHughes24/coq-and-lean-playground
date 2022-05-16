@@ -27,7 +27,7 @@ constant desc (f : M →* N) (hf : ∀ x ∈ a, is_unit (f x)) : localization a 
 @[simp] constant desc_of (f : M →* N) (hf : ∀ x ∈ a, is_unit (f x)) (x : M):
   desc a f hf (of a x) = f x
 
-@[ext] constant hom_ext {f g : localization a →* N} 
+@[ext] constant hom_ext {f g : localization a →* N}
   (h : f.comp (of a) = g.comp (of a)) : f = g 
 
 end localization

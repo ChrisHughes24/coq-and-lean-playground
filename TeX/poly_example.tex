@@ -140,10 +140,23 @@
 
 %%% The "real" document content comes below...
 
-\title{Polynomial Associativity}
+\title{Using Universal Properties to Prove Equalities of Morphisms Automatically}
 \author{Christopher Hughes}
 
 \begin{document}
+
+\section{Introduction}
+
+When formalizing mathematics in Lean, most Types have some universal property in some
+category. This universal property either describes the set of homomorphisms out of
+the object or the set of homomorphisms into the object. 
+
+For example the universal property of the polynomial ring $R[X]$ over 
+a commutative ring $R$ is given by the following isomorphism of functors.
+\begin{equation}
+\text{CommRing}(R[X], -) \cong \text{CommRing}(R, -) \times \text{Forget}(-)
+\end{equation}
+
 
 \section{Representable Functor}
 
@@ -181,9 +194,14 @@ the following isomorphism of functors.
 Given a map $f \in \mathcal{C}(X, Y)$, then $F(f)(x)$ is an element of $F(Y)$. This gives one 
 direction of the isomorphism. The other direction is given by $e_Y$, the map that is
 Axiom 3 of our definition of corepresentation. The fact that these two are two sided inverses
-of each other is given by Axiom 4, for one direction and the other direction, i.e.
-proving $e_Y(F(f)(x)) = f$, is given by applying extensionality,
-so it suffices to check $F(e_Y(F(f)(x)))(x) = F(f)(x)$. Then Axiom 4 proves the equality.
+of each other is given by Axiom 4, for one direction. The other direction, i.e.
+proving $e_Y(F(f)(x)) = f$, is given by applying extensionality.
+After applying extensionality we have to check $F(e_Y(F(f)(x)))(x) = F(f)(x)$. 
+Axiom 4 proves this equality
+
+To check the naturality of this isomorphism we have to check that given 
+any $g \in \mathcal{C}(Y,Z)$ and $f \in \mathcal{C}(X, Y)$
+$F(g)(F(f)(x)) = F(g \circ f)(x)$. This is just functoriality of $F$.
 
 \subsection{Examples of Representable Functors in Lean}
 
