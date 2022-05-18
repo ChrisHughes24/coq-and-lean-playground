@@ -149,59 +149,129 @@
 
 When formalizing mathematics in Lean, most Types have some universal property in some
 category. This universal property either describes the set of homomorphisms out of
-the object or the set of homomorphisms into the object. 
+the object or the set of homomorphisms into the object. We often want to use a universal
+property both to define morphisms and to check if morphisms are equal.
 
 For example the universal property of the polynomial ring $R[X]$ over 
 a commutative ring $R$ is given by the following isomorphism of functors.
+
 \begin{equation}
 \text{CommRing}(R[X], -) \cong \text{CommRing}(R, -) \times \text{Forget}(-)
 \end{equation}
 
+In other words to define a ring homomorphism out of the polynomial ring $R[X]$ 
+into a ring $S$, it suffices to provide a ring homomorphism $R \to S$ and 
+an element of $S$. We will call this map 
+$eval : \text{CommRing}(R, S) \times S \to \text{CommRing}(R[X],S)$.
+$eval$ is one direction of the isomorphism.
+
+Additionally, if we have a ring hom $f : R[X] \to S$, we can recover
+a ring homomorphism $R \to S$ by composing with the canonical map
+$C$ from $R \to R[X]$ and an element of $S$ by applying $f$ to $X$.
+We also know how $eval$ computes on $X$ and $C$. We know that
+$eval(f, s)(X) = s$ and $eval(f, s) \circ C = f$.
+
+This natural isomorphism also gives a method to check if two
+homomorphisms out of the polynomial ring are equal. Two ring homomorphisms
+$f$ and $g$ from $R[X]$ into $S$ out of the polynomial ring are equal if 
+$f(X) = g(X)$ and $f \circ C = g \circ C$, where $C$ is the canonical 
+morphism $R \to R[X]$.
+
+As an example of how to use this universal property consider the following
+problem. Suppose $R$, $S$ and $T$ are commutative rings and $f : R \to S$ and
+$g : S \to T$ are ring homomorphisms. Given an element $t$ of $T$ we can define
+two a map $R[X] \to T$ in two different ways. Suppose $map(f)$ is the canonical 
+morphism $R[X] \to S[X]$ given the map $f : R \to S$.
+
+$map(f)$ can be defined using the universal property. $map(f)$ is equal to
+$eval(X, C \circ f)$
+
+Suppose we want to check commutativity of the following diagram \newline
+% https://tikzcd.yichuanshen.de/#N4Igdg9gJgpgziAXAbVABwnAlgFyxMJZABgBoAmAXVJADcBDAGwFcYkQAlZADUpAF9S6TLnyEU5CtTpNW7ACoChIDNjwEiZYtIYs2iEAGUefftJhQA5vCKgAZgCcIAWyRkQOCEkkhG9AEYwjAAKIurivjB2OCA0unIGzvRoABR2AJRK9k6uiD6eSACMNH6BIWFi7IxRMXGy+iAwuik4pJaZgtkubjQFiMUyeuxNTC1tAAQAOpMAxlgOM+MZsb4BQaFqlQYOWJYAFjFm-EA
+\begin{tikzcd}
+  {S[X]} \arrow[rrdd, "{eval(t,g)}"]                             &  &   \\
+                                                                 &  &   \\
+  {R[X]} \arrow[uu, "map(f)"] \arrow[rr, "{eval(t,g \circ f)}"'] &  & T
+\end{tikzcd}
+
+Written equational this is the same as checking the following
+
+\begin{equation}
+  eval(t, g) \circ map(f) = eval(t, g \circ f)
+\end{equation}
+
+Unfolding $map$ gives us 
+
+\begin{equation}
+  eval(t, g) \circ eval(X, C \circ f) = eval(t, g \circ f)
+\end{equation}
+
+We can apply extensionality to this equation and we now have to check
+
+\begin{equation}
+  eval(t, g) (eval(X, C \circ f)(X)) = eval(t, g \circ f)(X)
+\end{equation}
+
+and
+
+\begin{equation}
+  eval(t, g) \circ eval(X, C \circ f) \circ C = eval(t, g \circ f) \circ C
+\end{equation}
+
+These equations can both be easily verified using the two equations
+$\forall f\ s, eval(f, s)(X) = s$ and 
+$\forall f \ s,eval(f, s)(X) = \circ C = f$.
+
 
 \section{Representable Functor}
 
-Let $\mathcal{C}$ be a category and let $F : C \to \text{Set}$
+In this section we will give a characterisation of a corepresentation
+of a copresheaf $F : \mathcal{C} \to \text{Set}$ for a category $C$.
+
+Let $\mathcal{C}$ be a category and let $F : \mathcal{C} \to \text{Set}$
 be a co-presheaf on $\mathcal{C}$. Then we will define a corepresentation of
-$F$ to be the following.
+$F$ to be the following. Given the following 5 things, we can recover an
+object $R$ of $\mathcal{C}$ and the natural isomorphism 
+of functors $\mathcal{C}(R, -) \cong F$.
 
 \begin{enumerate}
-  \item An object $X$ of $\mathcal{C}$
-  \item An element $x$ of $F(X)$
-  \item For every object $Y$ of $\mathcal{C}$, a map $e_Y : F(Y) \to \mathcal{C}(X, Y)$
-  \item For any object $Y$ of $\mathcal{C}$, and every element $f : F(Y)$, $F(e_Y(f))(x) = f$
-  \item For any two morphisms $f, g : \mathcal{C}(X, Y)$, if $F(f)(x) = F(g)(x)$ then $f = g$.
+  \item An object $R$ of $\mathcal{C}$
+  \item An element $u$ of $F(R)$
+  \item For every object $X$ of $\mathcal{C}$, a map $e_X : F(X) \to \mathcal{C}(R, X)$
+  \item For any object $X$ of $\mathcal{C}$, and every element $f : F(X)$, $F(e_X(f))(u) = f$
+  \item For any two morphisms $f, g : \mathcal{C}(R, X)$, if $F(f)(u) = F(g)(u)$ then $f = g$
 \end{enumerate}
 
 A representation of a functor $F : C^{op} \to \text{Set}$ is the dual concept to a corepresentable
 functor. We define it explicitly here.
 
 \begin{enumerate}
-  \item An object $X$ of $\mathcal{C}$
-  \item An element $x$ of $F(X^{op})$
-  \item For every object $Y$ of $\mathcal{C}$, a map $r_Y : F(Y^{op}) \to \mathcal{C}(Y, X)$
-  \item For any object $Y$ of $\mathcal{C}$, and every element $f \in F(Y^{op})$, $F(r_Y^{op}(f))(x) = f$.
-  \item For any two morphisms $f, g : \mathcal{C}(Y, X)$, if $F(f^{op})(x) = F(g^{op})(x)$ then $f = g$.
+  \item An object $R$ of $\mathcal{C}$
+  \item An element $c$ of $F(R^{op})$
+  \item For every object $X$ of $\mathcal{C}$, a map $r_X : F(R^{op}) \to \mathcal{C}(X, R)$
+  \item For any object $X$ of $\mathcal{C}$, and every element $f \in F(X^{op})$, $F(r_X^{op}(f))(c) = f$
+  \item For any two morphisms $f, g : \mathcal{C}(X, R)$, if $F(f^{op})(c) = F(g^{op})(c)$ then $f = g$
 \end{enumerate}
 
 We now prove that this definition is equivalent to the more usual definition.
-The usual definition is a pair of an object $X$ of $\mathcal{C}$ and 
+The usual definition is a pair of an object $R$ of $\mathcal{C}$ and 
 the following isomorphism of functors.
 
 \begin{equation}
-\mathcal{C}(X, -) \cong F
+\mathcal{C}(R, -) \cong F
 \end{equation}
 
-Given a map $f \in \mathcal{C}(X, Y)$, then $F(f)(x)$ is an element of $F(Y)$. This gives one 
-direction of the isomorphism. The other direction is given by $e_Y$, the map that is
+Given a map $f \in \mathcal{C}(R, X)$, then $F(f)(u)$ is an element of $F(X)$. This gives one 
+direction of the isomorphism. The other direction is given by $e_X$, the map that is
 Axiom 3 of our definition of corepresentation. The fact that these two are two sided inverses
 of each other is given by Axiom 4, for one direction. The other direction, i.e.
-proving $e_Y(F(f)(x)) = f$, is given by applying extensionality.
-After applying extensionality we have to check $F(e_Y(F(f)(x)))(x) = F(f)(x)$. 
+proving $e_X(F(f)(u)) = f$, is given by applying extensionality.
+After applying extensionality we have to check $F(e_X(F(f)(u)))(u) = F(f)(u)$. 
 Axiom 4 proves this equality
 
 To check the naturality of this isomorphism we have to check that given 
-any $g \in \mathcal{C}(Y,Z)$ and $f \in \mathcal{C}(X, Y)$
-$F(g)(F(f)(x)) = F(g \circ f)(x)$. This is just functoriality of $F$.
+any $g \in \mathcal{C}(X,Y)$ and $f \in \mathcal{C}(R, X)$
+$F(g)(F(f)(u)) = F(g \circ f)(u)$. This is just functoriality of $F$.
 
 \subsection{Examples of Representable Functors in Lean}
 
@@ -210,38 +280,38 @@ We'll show the definition of the universal property in Lean as well and how each
 of the five things above. The free module is over a set $S$ is the corepresentation of the functor 
 $M \mapsto \text{Hom}_{Set}(S, \text{Forget}(M))$, from $\text{Mod} \to \text{Set}$.
 
-1) An object $X$ of $\mathcal{C}$
+1) An object $R$ of $\mathcal{C}$
 \begin{lstlisting}
 @[derive add_comm_group, derive module R]
-def free_module : Type :=
+def free_module (R : Type) [comm_ring R] (S : Type) : Type :=
 \end{lstlisting}
-The free module over a Type \lstinline{α} is an object in the category of \lstinline{R}
+The free module over a Type \lstinline{S} is an object in the category of \lstinline{R}
 modules. This is a Type and a \lstinline{module R}, which in this particular implementation
 are not bundled.
 
 
-2) An element $x$ of $F(X)$
+2) An element $u$ of $F(R)$
 \begin{lstlisting}
-def X (a : α) : free_module R α :=
+def X (a : S) : free_module R S :=
 \end{lstlisting}
-This is the canonical map \lstinline{α} to \lstinline{free_module R α}.
+This is the canonical map of sets \lstinline{S} to \lstinline{free_module R S}.
 
-3) For every object $Y$ of $\mathcal{C}$, a map $e_Y : F(Y) \to \mathcal{C}(X, Y)$
+3) For every object $X$ of $\mathcal{C}$, a map $e_X : F(X) \to \mathcal{C}(R, X)$
 \begin{lstlisting}
-def extend (f : α → M) : free_module R α →ₗ[R] M :=
+def extend (f : S → M) : free_module R S →ₗ[R] M :=
 \end{lstlisting}
-This is the canonical way of extending a map \lstinline{α → M} to a map 
-\lstinline{free_module R α →ₗ[R] M}.
+This is the canonical way of extending a map \lstinline{S → M} to a map 
+\lstinline{free_module R S →ₗ[R] M}.
 
-4) For any object $Y$ of $\mathcal{C}$, and every element $f : F(Y)$, $F(e_Y(f))(x) = f$
+4) For any object $X$ of $\mathcal{C}$, and every element $f : F(X)$, $F(e_X(f))(u) = f$
 \begin{lstlisting}
-@[simp] lemma extend_X (f : α → M) (a : α) : extend f (X a : free_module R α) = f a :=
+@[simp] lemma extend_X (f : S → M) (a : S) : extend f (X a : free_module R S) = f a :=
 \end{lstlisting}
 This lemma says that when you extend a map on a basis to a map on the whole module,
 
-5) For any two morphisms $f, g : \mathcal{C}(X, Y)$, if $F(f)(x) = F(g)(x)$ then $f = g$.
+5) For any two morphisms $f, g : \mathcal{C}(R, X)$, if $F(f)(u) = F(g)(u)$ then $f = g$
 \begin{lstlisting}
-@[ext] lemma hom_ext {f g : free_module R α →ₗ[R] M} (h : ∀ a, f (X a) = g (X a)) : f = g :=
+@[ext] lemma hom_ext {f g : free_module R S →ₗ[R] M} (h : ∀ a, f (X a) = g (X a)) : f = g :=
 \end{lstlisting}
 
 \subsubsection{Product and Coproduct of Abelian Groups}
