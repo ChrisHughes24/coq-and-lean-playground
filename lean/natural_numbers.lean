@@ -1,6 +1,6 @@
 import tactic
 
-def hom {X Y : Type} (f : X → X) (g : Y → Y) : Type :=
+def hom  {X Y : Type} (f : X → X) (g : Y → Y) : Type :=
 { h : X → Y // ∀ z, h (f z) = g (h z) }
 
 instance {X Y : Type} (f : X → X) (g : Y → Y) : 
@@ -8,7 +8,7 @@ instance {X Y : Type} (f : X → X) (g : Y → Y) :
 { coe := subtype.val }
 
 -- Σ (X : Type) (x : X), (X → X)
-
+ 
 -- def T := Σ (X : Type), X → X
 
 -- def C := Σ t : T, t.fst
