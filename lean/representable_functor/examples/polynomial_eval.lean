@@ -2,7 +2,7 @@ import tactic
 
 noncomputable theory
 
-variables {R S T : Type} [comm_ring R] [comm_ring S] [comm_ring T]
+variables {R S T U : Type} [comm_ring R] [comm_ring S] [comm_ring T] [comm_ring U]
 
 constant polynomial (R : Type) [comm_ring R] : Type
 
@@ -22,8 +22,6 @@ constant eval₂ (f : R →+* S) (x : S) : polynomial R →+* S
 
 @[simp] constant eval₂_C (f : R →+* S) (x : S) (r : R) : eval₂ f x (C r) = f r
 
-example (f : polynomial R →+* S) : f = eval₂ (f.comp C) (f X) := sorry
-
 @[ext] constant hom_ext {f g : polynomial R →+* S} (h1 : f X = g X)
   (h2 : f.comp C = g.comp C) : f = g
 
@@ -35,6 +33,7 @@ set_option trace.simplify.rewrite true
 example (f : R →+* S) (g : S →+* T) (x : T) : 
   (eval₂ g x).comp (map f) = eval₂ (g.comp f) x :=
 begin
+  unfold map,
   ext; simp only [ring_hom.coe_comp, function.comp_app, eval₂_X, eval₂_C, map],
 end
 -- hom_ext (by simp [map]) 
@@ -46,5 +45,11 @@ end
 --     rw [map, eval₂_comp_C, ring_hom.comp_assoc, eval₂_comp_C,
 --       ← ring_hom.comp_assoc, eval₂_comp_C],
 --   end
+
+example (f : R →+* S) (g : S →+* T) (h : U →+* polynomial R) (x : T) : 
+  ((eval₂ g x).comp (map f)).comp h = (eval₂ (g.comp f) x).comp h :=
+begin
+  ext; simp only [ring_hom.coe_comp, function.comp_app, eval₂_X, eval₂_C, map],
+end
 
 end polynomial
