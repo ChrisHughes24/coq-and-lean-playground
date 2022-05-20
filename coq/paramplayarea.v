@@ -4,7 +4,7 @@ Inductive nat : Set :=
 | zero : nat
 | succ : nat -> nat.
 
-Inductive T (X Y : Type) : Type := 
+Inductive T (X Y : Type) : Type :=
 | Tmk (f : (Y -> Type) -> (X -> Type)) (hf : forall s t, (forall y, s y -> t y) -> forall x, f s x -> f t x) : T X Y.
 
 
@@ -13,7 +13,7 @@ Inductive S : Type :=
 
 Definition R (X Y : Type) : Type := X -> Y -> Type.
 
-Definition P (F : Type -> Type) (Z : Type) := 
+Definition P (F : Type -> Type) (Z : Type) :=
   forall (X : Type), (X -> Z) -> (F X -> F Z).
 
 Definition O :=
@@ -24,7 +24,7 @@ Nmk (X : Type) (x : X) (f : X -> X) : N.
 
 Definition J (X : Type) : Type := (X -> bool -> X) -> X.
 
-Definition I (F G : Type -> Type) (Y : Type) := 
+Definition I (F G : Type -> Type) (Y : Type) :=
   forall X, (X -> Y) -> (F X -> G Y).
 
 Parametricity eq as eq_param arity 1.
@@ -60,11 +60,11 @@ Parametricity Q as Q_param arity 2.
 Print eq_param.
 Print Q_param.
 
-Definition funextl : Type := 
-forall (A B : Type) 
+Definition funextl : Type :=
+forall (A B : Type)
 (f g : A -> B), (forall a : A, f a = g a) -> f = g.
 
-Parametricity funextl as funext_param arity 2. 
+Parametricity funextl as funext_param arity 2.
 
 Print funext_param.
 
@@ -78,7 +78,7 @@ Parametricity Coq.Init.Logic.eq as eqparam arity 2.
 Parametricity bool as bool1 arity 1.
 Parametricity bool as bool2 arity 2.
 Parametricity sigT as sigma2 arity 2.
-Parametricity 
+Parametricity
 
 Print sigma2.
 

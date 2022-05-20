@@ -5,15 +5,15 @@ namespace units
 
 variables {M : Type} [monoid M]
 
-def of : units M →* M :=
+def of : units M →* M := 
 ⟨coe, rfl, λ _ _, rfl⟩
 
 variables {G : Type} [group G] (f : G →* M)
 
 def restrict : G →* units M :=
-⟨λ x, ⟨f x, f x⁻¹,
-  by rw [← map_mul, _root_.mul_inv_self, map_one],
-  by rw [← map_mul, _root_.inv_mul_self, map_one]⟩,
+⟨λ x, ⟨f x, f x⁻¹, 
+  by rw [← map_mul, _root_.mul_inv_self, map_one], 
+  by rw [← map_mul, _root_.inv_mul_self, map_one]⟩, 
   by ext; simp, λ _ _, by ext; simp⟩
 
 @[simp] lemma of_comp_restrict : of.comp (restrict f) = f :=
@@ -21,10 +21,17 @@ by ext; refl
 
 @[simp] lemma of_restrict (x : G) : of (restrict f x) = f x := rfl
 
-@[ext] lemma hom_ext {f g : G →* units M} (h : of.comp f = of.comp g) : f = g :=
+@[simp] lemma restrict_of : restrict of = monoid_hom.id (units M) :=
 begin
   ext x,
-  exact monoid_hom.congr_fun h x
+  refl,
+end
+
+@[simp] lemma restrict_comp {H : Type*} [group H] (f : G →* M) (g : H →* G) : 
+  (restrict f).comp g = restrict (f.comp g) :=
+begin
+  ext,
+  simp [restrict],
 end
 
 end units
@@ -89,29 +96,31 @@ end
 
 @[simp] lemma desc_of (x : M) : desc f (of x) = f x := rfl
 
-@[ext] lemma hom_ext {f g : abelianization M →* N}
+@[ext] lemma hom_ext {f g : abelianization M →* N} 
   (h : f.comp of = g.comp of) : f = g :=
 begin
   ext x,
   refine con.induction_on x (λ x, _),
   convert monoid_hom.congr_fun h x
-end
+end 
+
+@[simp] lemma desc_of' : desc (@of M _) = monoid_hom.id _ :=
+hom_ext (by simp)
+
+@[simp] lemma comp_desc {P : Type} [comm_monoid P] (g : N →* P) :
+  g.comp (desc f) = desc (g.comp f) :=
+hom_ext (by ext; simp)
 
 end abelianization
 
 variables {G M : Type} [group G] [comm_monoid M] (f : G →* M)
-  {N : Type} [comm_group N] (g : N →* abelianization G)
+  {I J : Type} [comm_group I] [comm_group J] (i : I →* abelianization G)
+  (j : units M →* J)
 
-example : abelianization.desc (units.restrict f) =
-  units.restrict (abelianization.desc f) :=
+example : j.comp ((abelianization.desc (units.restrict f)).comp i) =
+  j.comp ((units.restrict (abelianization.desc f)).comp i) :=
 begin
-  apply abelianization.hom_ext,
-  ext; simp
-end
-
-example : (abelianization.desc (units.restrict f)).comp g =
-  (units.restrict (abelianization.desc f)).comp g :=
-begin
-  ext; simp,
+  rw [units.restrict_comp, ← monoid_hom.comp_assoc,
+    abelianization.comp_desc],
 
 end
