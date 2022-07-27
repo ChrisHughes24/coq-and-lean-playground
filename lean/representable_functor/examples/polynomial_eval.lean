@@ -25,18 +25,21 @@ constant eval₂ (f : R →+* S) (x : S) : polynomial R →+* S
 @[ext] constant hom_ext {f g : polynomial R →+* S} (h1 : f X = g X)
   (h2 : f.comp C = g.comp C) : f = g
 
+example (f : polynomial R →+* S) : eval₂ (f.comp C) (f X) = f :=
+by ext; simp
+
 def map (f : R →+* S) : polynomial R →+* polynomial S :=
 eval₂ (C.comp f) X
 
 set_option trace.simplify.rewrite true
 
-example (f : R →+* S) (g : S →+* T) (x : T) : 
+example (f : R →+* S) (g : S →+* T) (x : T) :
   (eval₂ g x).comp (map f) = eval₂ (g.comp f) x :=
 begin
   unfold map,
   ext; simp only [ring_hom.coe_comp, function.comp_app, eval₂_X, eval₂_C, map],
 end
--- hom_ext (by simp [map]) 
+-- hom_ext (by simp [map])
 --   begin
 --     ext,
 --     simp [map]
@@ -46,7 +49,7 @@ end
 --       ← ring_hom.comp_assoc, eval₂_comp_C],
 --   end
 
-example (f : R →+* S) (g : S →+* T) (h : U →+* polynomial R) (x : T) : 
+example (f : R →+* S) (g : S →+* T) (h : U →+* polynomial R) (x : T) :
   ((eval₂ g x).comp (map f)).comp h = (eval₂ (g.comp f) x).comp h :=
 begin
   ext; simp only [ring_hom.coe_comp, function.comp_app, eval₂_X, eval₂_C, map],

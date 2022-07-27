@@ -147,21 +147,30 @@
 
 \section{Introduction}
 
-When formalizing mathematics in Lean, most Types have some universal property in some
+% What is the audience? Computer Science paper, but readable by mathematicians
+% Use normal maths notation without mentioning Lean or Types at first
+% Use one terminology for one concept. i.e. don't mix the phrases "isomorphism of functor"
+  % and "natural isomorphism"
+% Say something about what the problem is before giving examples,
+% Relate examples to representable functors
+% Mention the usual definition of representable functor
+% Define extensionality properly
+
+When formalizing mathematics, most Types have some universal property in some
 category. This universal property either describes the set of homomorphisms out of
 the object or the set of homomorphisms into the object. We often want to use a universal
 property both to define morphisms and to check if morphisms are equal.
 
-For example the universal property of the polynomial ring $R[X]$ over 
+For example the universal property of the polynomial ring $R[X]$ over
 a commutative ring $R$ is given by the following isomorphism of functors.
 
 \begin{equation}
 \text{CommRing}(R[X], -) \cong \text{CommRing}(R, -) \times \text{Forget}(-)
 \end{equation}
 
-In other words to define a ring homomorphism out of the polynomial ring $R[X]$ 
-into a ring $S$, it suffices to provide a ring homomorphism $R \to S$ and 
-an element of $S$. We will call this map 
+In other words to define a ring homomorphism out of the polynomial ring $R[X]$
+into a ring $S$, it suffices to provide a ring homomorphism $R \to S$ and
+an element of $S$. We will call this map
 $eval : \text{CommRing}(R, S) \times S \to \text{CommRing}(R[X],S)$.
 $eval$ is one direction of the isomorphism.
 
@@ -173,18 +182,18 @@ $eval(f, s)(X) = s$ and $eval(f, s) \circ C = f$.
 
 This natural isomorphism also gives a method to check if two
 homomorphisms out of the polynomial ring are equal. Two ring homomorphisms
-$f$ and $g$ from $R[X]$ into $S$ out of the polynomial ring are equal if 
-$f(X) = g(X)$ and $f \circ C = g \circ C$, where $C$ is the canonical 
+$f$ and $g$ from $R[X]$ into $S$ out of the polynomial ring are equal if
+$f(X) = g(X)$ and $f \circ C = g \circ C$, where $C$ is the canonical
 morphism $R \to R[X]$.
 
 As an example of how to use this universal property consider the following
 problem. Suppose $R$, $S$ and $T$ are commutative rings and $f : R \to S$ and
 $g : S \to T$ are ring homomorphisms. Given an element $t$ of $T$ we can define
-two a map $R[X] \to T$ in two different ways. Suppose $map(f)$ is the canonical 
+two a map $R[X] \to T$ in two different ways. Suppose $map(f)$ is the canonical
 morphism $R[X] \to S[X]$ given the map $f : R \to S$.
 
 $map(f)$ can be defined using the universal property. $map(f)$ is equal to
-$eval(X, C \circ f)$
+$eval(C \circ f, X)$
 
 Suppose we want to check commutativity of the following diagram \newline
 % https://tikzcd.yichuanshen.de/#N4Igdg9gJgpgziAXAbVABwnAlgFyxMJZABgBoAmAXVJADcBDAGwFcYkQAlZADUpAF9S6TLnyEU5CtTpNW7ACoChIDNjwEiZYtIYs2iEAGUefftJhQA5vCKgAZgCcIAWyRkQOCEkkhG9AEYwjAAKIurivjB2OCA0unIGzvRoABR2AJRK9k6uiD6eSACMNH6BIWFi7IxRMXGy+iAwuik4pJaZgtkubjQFiMUyeuxNTC1tAAQAOpMAxlgOM+MZsb4BQaFqlQYOWJYAFjFm-EA
@@ -200,7 +209,7 @@ Written equational this is the same as checking the following
   eval(t, g) \circ map(f) = eval(t, g \circ f)
 \end{equation}
 
-Unfolding $map$ gives us 
+Unfolding $map$ gives us
 
 \begin{equation}
   eval(t, g) \circ eval(X, C \circ f) = eval(t, g \circ f)
@@ -219,19 +228,20 @@ and
 \end{equation}
 
 These equations can both be easily verified using the two equations
-$\forall f\ s, eval(f, s)(X) = s$ and 
-$\forall f \ s,eval(f, s)(X) = \circ C = f$.
+$\forall f\ s, eval(f, s)(X) = s$ and
+$\forall f \ s,eval(f, s)(X) \circ C = f$.
 
+% Outline of what will happen next
 
 \section{Representable Functor}
 
 In this section we will give a characterisation of a corepresentation
-of a copresheaf $F : \mathcal{C} \to \text{Set}$ for a category $C$.
+of a copresheaf $F : \mathcal{C} \to \text{Set}$ for a category $\mathcal{C}$.
 
 Let $\mathcal{C}$ be a category and let $F : \mathcal{C} \to \text{Set}$
 be a co-presheaf on $\mathcal{C}$. Then we will define a corepresentation of
 $F$ to be the following. Given the following 5 things, we can recover an
-object $R$ of $\mathcal{C}$ and the natural isomorphism 
+object $R$ of $\mathcal{C}$ and the natural isomorphism
 of functors $\mathcal{C}(R, -) \cong F$.
 
 \begin{enumerate}
@@ -254,22 +264,22 @@ functor. We define it explicitly here.
 \end{enumerate}
 
 We now prove that this definition is equivalent to the more usual definition.
-The usual definition is a pair of an object $R$ of $\mathcal{C}$ and 
+The usual definition is a pair of an object $R$ of $\mathcal{C}$ and
 the following isomorphism of functors.
 
 \begin{equation}
 \mathcal{C}(R, -) \cong F
 \end{equation}
 
-Given a map $f \in \mathcal{C}(R, X)$, then $F(f)(u)$ is an element of $F(X)$. This gives one 
+Given a map $f \in \mathcal{C}(R, X)$, then $F(f)(u)$ is an element of $F(X)$. This gives one
 direction of the isomorphism. The other direction is given by $e_X$, the map that is
 Axiom 3 of our definition of corepresentation. The fact that these two are two sided inverses
 of each other is given by Axiom 4, for one direction. The other direction, i.e.
 proving $e_X(F(f)(u)) = f$, is given by applying extensionality.
-After applying extensionality we have to check $F(e_X(F(f)(u)))(u) = F(f)(u)$. 
+After applying extensionality we have to check $F(e_X(F(f)(u)))(u) = F(f)(u)$.
 Axiom 4 proves this equality
 
-To check the naturality of this isomorphism we have to check that given 
+To check the naturality of this isomorphism we have to check that given
 any $g \in \mathcal{C}(X,Y)$ and $f \in \mathcal{C}(R, X)$
 $F(g)(F(f)(u)) = F(g \circ f)(u)$. This is just functoriality of $F$.
 
@@ -277,7 +287,7 @@ $F(g)(F(f)(u)) = F(g \circ f)(u)$. This is just functoriality of $F$.
 
 \subsubsection{Free Module}
 We'll show the definition of the universal property in Lean as well and how each part corresponds to each
-of the five things above. The free module is over a set $S$ is the corepresentation of the functor 
+of the five things above. The free module is over a set $S$ is the corepresentation of the functor
 $M \mapsto \text{Hom}_{Set}(S, \text{Forget}(M))$, from $\text{Mod} \to \text{Set}$.
 
 1) An object $R$ of $\mathcal{C}$
@@ -300,7 +310,7 @@ This is the canonical map of sets \lstinline{S} to \lstinline{free_module R S}.
 \begin{lstlisting}
 def extend (f : S → M) : free_module R S →ₗ[R] M :=
 \end{lstlisting}
-This is the canonical way of extending a map \lstinline{S → M} to a map 
+This is the canonical way of extending a map \lstinline{S → M} to a map
 \lstinline{free_module R S →ₗ[R] M}.
 
 4) For any object $X$ of $\mathcal{C}$, and every element $f : F(X)$, $F(e_X(f))(u) = f$
@@ -316,7 +326,7 @@ This lemma says that when you extend a map on a basis to a map on the whole modu
 
 \subsubsection{Product and Coproduct of Abelian Groups}
 
-Given two abelian (additive) groups, \lstinline{A} and \lstinline {B}, 
+Given two abelian (additive) groups, \lstinline{A} and \lstinline {B},
 the universal property of the product is given by the following.
 The product of abelian groups $A$ and $B$ is the representation
 of the functor $\text{Ab}(-, A) \times \text{Ab}(-, B)$, from
@@ -325,7 +335,7 @@ $\text{Ab}^{op}$ to $\text{Set}$.
 1) The object is the product of sets \lstinline{A × B} with the obvious
 group structure.
 
-2) There are two projection maps \lstinline{fst : A × B →+ A} and 
+2) There are two projection maps \lstinline{fst : A × B →+ A} and
 \lstinline{snd : A × B →+ B}. (The types \lstinline{A} and \lstinline{B}
 are both explicit arguments to each of these definitions).
 
@@ -339,18 +349,18 @@ def prod (f : C →+ A) (g : C →+ B) : C →+ A × B :=
 and \lstinline{prod}.
 \begin{lstlisting}
 lemma fst_comp_prod (f : C →+ A) (g : C →* B) : (fst A B).comp (f.prod g) = f :=
-  
+
 lemma snd_comp_prod (f : C →+ A) (g : C →* B) : (snd A B).comp (f.prod g) = g :=
 \end{lstlisting}
 
 5) Two maps into the product are equal if each component is equal
 \begin{lstlisting}
 lemma hom_ext {f g : C →+ A × B}
-  (h1 : (fst A B).comp f = (fst A B).comp g) 
+  (h1 : (fst A B).comp f = (fst A B).comp g)
   (h2 : (snd A B).comp f = (snd A B).comp g) : f = g :=
 \end{lstlisting}
 
-The coproduct of abelian groups is the same object as the product, 
+The coproduct of abelian groups is the same object as the product,
 but with a different universal property. The coproduct of $A$ and $B$
 is the corepresentation of the functor $\text{Ab}(A, -) \times \text{Ab}(B, -)$
 from $\text{Ab} \to \text{Set}$.
@@ -358,7 +368,7 @@ from $\text{Ab} \to \text{Set}$.
 1) The object is the product of sets \lstinline{A × B} with the obvious
 group structure.
 
-2) There are two embeddings \lstinline{inl : A →+ A × B} and 
+2) There are two embeddings \lstinline{inl : A →+ A × B} and
 \lstinline{inr : B →+ A × B}. (The types \lstinline{A} and \lstinline{B}
 are both explicit arguments to each of these definitions).
 
@@ -376,48 +386,48 @@ lemma coprod_comp_inl (f : A →+ C) (g : B →+ C) : (f.coprod g).comp (inl A B
 lemma coprod_comp_inr (f : A →+ C) (g : B →+ C) : (f.coprod g).comp (inr A B) = g :=
 \end{lstlisting}
 
-5) We have an extensionality lemma saying two maps out of the coproduct are equal 
+5) We have an extensionality lemma saying two maps out of the coproduct are equal
 if they are equal after composition with each embedding
 \begin{lstlisting}
 lemma hom_ext {f g : A × B →+ C}
-  (h1 : f.comp (inl A B) = g.comp (inl A B)) 
+  (h1 : f.comp (inl A B) = g.comp (inl A B))
   (h2 : f.comp (inr A B) = g.comp (inr A B)) : f = g :=
 \end{lstlisting}
 
 \subsubsection{Integers}
-The integers are the initial ring. So they are the corepresention of the 
+The integers are the initial ring. So they are the corepresention of the
 constant functor sending every ring to the set with one element.
 
 1) The object is the Type of integers with the normal ring structure.
 
-2) This part is not defined in Lean. There is no real use for it, it would just be an element of 
+2) This part is not defined in Lean. There is no real use for it, it would just be an element of
 the unit type.
 
 3) This is the canonical map from the integers into any ring.
 
-4) This part is not defined in Lean, if it was it would just be an equality of two 
+4) This part is not defined in Lean, if it was it would just be an equality of two
 elements of the unit type. This is not useful.
 
 5) There is a lemma saying that for any ring \lstinline{R} any two maps from the integers into \lstinline{R}
 are equal.
 
 \subsubsection{Polynomials}
-The polynomial ring over a commutative ring $R$ is the corepresentation of the functor 
+The polynomial ring over a commutative ring $R$ is the corepresentation of the functor
 $S \mapsto S \times \text{CommRing}(R, S)$.
 
 1) The object is the polynomial ring \lstinline{polynomial R}, with the obvious ring structure.
 
-2) There is a ring homomorphism \lstinline{C : R →+* polynomial R}, and an element 
+2) There is a ring homomorphism \lstinline{C : R →+* polynomial R}, and an element
 \lstinline{X : polynomial R}
 
-3) There is an evaluation homomorphism to evaluate a polynomial of \lstinline{R} in 
-an arbitrary commutative ring \lstinline{S} given an element of \lstinline{S} and 
+3) There is an evaluation homomorphism to evaluate a polynomial of \lstinline{R} in
+an arbitrary commutative ring \lstinline{S} given an element of \lstinline{S} and
 a ring homomorphism \lstinline{R →+* S}.
 \begin{lstlisting}
 def eval₂ (f : R →+* S) (x : S) : polynomial R →+* S :=
 \end{lstlisting}
 
-4) There are two lemmas saying what the evaluation map does to both \lstinline{X} and 
+4) There are two lemmas saying what the evaluation map does to both \lstinline{X} and
 \lstinline{C}.
 \begin{lstlisting}
 lemma eval₂_X : eval₂ f x X = x :=
@@ -425,16 +435,18 @@ lemma eval₂_X : eval₂ f x X = x :=
 lemma eval₂_comp_C : (eval₂ f x).comp C = f :=
 \end{lstlisting}
 
-5) There is a lemma stating that two ring homomorphisms out of the polynomial ring are 
+5) There is a lemma stating that two ring homomorphisms out of the polynomial ring are
 equal if they are equal on \lstinline{X} and equal on \lstinline{C}.
 \begin{lstlisting}
-lemma hom_ext {f g : polynomial R →+* S} 
+lemma hom_ext {f g : polynomial R →+* S}
   (h1 : f X = g X) (h2 : f.comp C = g.comp C) : f = g :=
 \end{lstlisting}
 
 \section{Adjunction}
 
-Given a functor $F : \mathcal{C} \to \mathcal{D}$ we will define a left adjoint of $F$ to 
+%Write below paragraph again. Lots of typos in this section
+
+Given a functor $F : \mathcal{C} \to \mathcal{D}$ we will define a left adjoint of $F$ to
 a corepresention of $\mathcal{D}(F(A),-)$ for every object $A$ of $\mathcal{C}$. We will call
 this map of object sets $G$. We can now prove that $G$ is a functor. Explicitly,
 this is the following data.
@@ -442,20 +454,20 @@ this is the following data.
 \begin{enumerate}
   \item A map of object set $G : \text{Obj}(\mathcal{D})\to \text{Obj}(\mathcal{C})$
   \item For every object $X$ of $\mathcal{D}$, a map $\eta_X \in \mathcal{D}(X, F(G(X)))$
-  \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$, 
+  \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$,
     a map of sets $e_{X,Y} : \mathcal{D}(X, F(Y)) \to \mathcal{C}(G(X), Y)$
-  \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$, 
+  \item For every object $X$ of $\mathcal{D}$ and $Y$ of $\mathcal{C}$,
     and every element $f \in \mathcal{D}(X, F(Y))$, $F(e_{X,Y}(f)) \circ \eta_X = f$
   \item $f,g \in \mathcal{C}(G(X), Y)$ are equal iff $F(f) \circ \eta_X = F(g) \circ \eta_X$
 \end{enumerate}
 
-We can prove that $G$ is in fact a functor. 
+We can prove that $G$ is in fact a functor.
 Given objects $A$ and $B$ of $\mathcal{D}$ and a map $f : \mathcal{D}(, B)$,A
 then define $G(f)$ to be $e_{A,G(B)}(\eta_B \circ f)$.
 
-Then 
+Then
 \begin{equation}
-  G(\text{id}_A) = e_{A,G(A)}(\eta_A \circ \text{id}_A) = 
+  G(\text{id}_A) = e_{A,G(A)}(\eta_A \circ \text{id}_A) =
 e_{A,G(A)}(F (\text{id}_{G(A)}) \circ \eta_A) = \text{id}_{G(A)}
 \end{equation}
 
@@ -476,9 +488,9 @@ This works similarly for right adjoints.
 
 \section{Method for Checking Equalities}
 
-The basic method for checking equalities of morphisms is to write every morphism in terms of 
+The basic method for checking equalities of morphisms is to write every morphism in terms of
 the universal property whenever possible, and then use extensionality as many times
-as possible and then repeatedly 
+as possible and then repeatedly
 rewrite using Axiom 4 of the corepresentable or representable functor axioms.
 
 \subsection{Examples of Checking Equalities}
@@ -488,7 +500,7 @@ We demonstrate how to prove that given a polynomial
 \lstinline{p} over a commutative ring \lstinline{R}, commutative rings
 \lstinline{S} and \lstinline{T}, ring homs,
 \lstinline{f : R →+* S} and \lstinline{g : S →+* T} and \lstinline{x : T},
-that 
+that
 \begin{lstlisting}
 eval₂ g x (map f p) = eval₂ (g.comp f) x p
 \end{lstlisting}
@@ -501,7 +513,7 @@ The first step is to write this equality as an equality of morphisms. So we shou
 (eval₂ g x).comp (map f) = eval₂ (g.comp f) x
 \end{lstlisting}
 
-Then we write the morphism \lstinline{map} using the universal property. 
+Then we write the morphism \lstinline{map} using the universal property.
 \lstinline{map f} is equal to \lstinline {eval₂ (f.comp C) X}.
 
 We now have to prove
@@ -514,13 +526,13 @@ We have two equalities to prove
 \begin{lstlisting}
 ((eval₂ g x).comp (eval₂ (f.comp C) X)) X = eval₂ (g.comp f) x X
 \end{lstlisting}
-and 
+and
 \begin{lstlisting}
 ((eval₂ g x).comp (eval₂ (f.comp C) X)).comp C = (eval₂ (g.comp f) x X).comp C
 \end{lstlisting}
 
 We will focus on the first equalities. Using the theorem about how \lstinline{eval₂}
-computes on \lstinline{X} three times, we can simplify the equality to \lstinline{x = x} which is true 
+computes on \lstinline{X} three times, we can simplify the equality to \lstinline{x = x} which is true
 by reflexivity.
 
 For the second equality we can use the theorem about how \lstinline{eval₂}
@@ -529,7 +541,9 @@ computes on \lstinline{C}. Applying it three times gives the equality
 
 \subsubsection{Polynomial Associativity Example}
 
-The Free Module functor which we will call $F$ is the left adjoint to the forgetful 
+% Make sure I am always explicit about Forgetful functor.
+
+The Free Module functor which we will call $F$ is the left adjoint to the forgetful
 functor $\text{Forget} : \text{Mod}_R \to \text{Set}$.
 
 We will call the map $A \to \text{Forget}(F(A))$, $X$ and use subscripts for application.
@@ -537,10 +551,10 @@ We might not always write the forgetful functor explicitly.
 
 The map $(A \to \text{Forget}(B)) \to {\text{Mod}_R}(F(A), B)$ will be called $extend$.
 
-We will define multiplication on $F(\mathbb{N})$ as a morphism of Type 
+We will define multiplication on $F(\mathbb{N})$ as a morphism of Type
 \begin{equation}
   \text{Mod}_R(F(\mathbb{N}), [F(\mathbb{N}), F(\mathbb{N})])
-\end{equation} 
+\end{equation}
 Square brackets indicate the hom object in $\text{Mod}_R$.
 
 The definition of multiplication is as follows
@@ -553,7 +567,7 @@ In order to do this, we have to state associativity as an equality of morphisms,
 as opposed to an equality of elements of the free module. We use two operations
 to do this, both of which are versions of linear map composition as a linear map.
 
-For modules $A$, $B$, and $C$ we have two versions of linear map 
+For modules $A$, $B$, and $C$ we have two versions of linear map
 composition which we call $R$ and $L$.
 
 \begin{equation}
@@ -563,7 +577,7 @@ composition which we call $R$ and $L$.
   \end{aligned}
 \end{equation}
 
-Then the map $a, b, c \mapsto \text{mul} (\text{mul} (a)(b))(c)$ can be written as 
+Then the map $a, b, c \mapsto \text{mul} (\text{mul} (a)(b))(c)$ can be written as
 \begin{equation}
   \text{Forget}(R)(\text{mul}) \circ \text{mul}
 \end{equation}
@@ -596,14 +610,14 @@ of natural numbers.
 
 \section{Potential Improvements}
 
-Having to unfold the definition of linear map composition is unsatisfying as well as having to 
-directly apply funext. Probably it would be better to express the universal property as 
+Having to unfold the definition of linear map composition is unsatisfying as well as having to
+directly apply funext. Probably it would be better to express the universal property as
 a representation of a functor $\text{Mod}_R \to \text{Mod}_R$ and to develop some
 theory of representable functors in enriched categories.
 
 Given a functor $F : \text{Mod}_R \to \text{Mod}_R$, then if $X$ is a corepresentation of $F$,
-the object $[X, A]$ is a representation of the functor $B \mapsto [B, F(A)]$. The hom object 
-inherits a universal property from $X$ and linear composition can probably be written in terms of this 
+the object $[X, A]$ is a representation of the functor $B \mapsto [B, F(A)]$. The hom object
+inherits a universal property from $X$ and linear composition can probably be written in terms of this
 universal property.
 
 % We start by defining the free module. The free module $F(\alpha)$ over a Type $\alpha$ is the module
@@ -626,29 +640,29 @@ universal property.
 
 % There is a map \begin{equation} extend : \text{Hom}(\alpha, \text{Forget}(M)) \rightarrow \text{Hom}(F(\alpha),M) \end{equation}
 
-% There are two properties proven 
+% There are two properties proven
 
 % \lemma\label{extendX}
-  
+
 % Let $f$ be a map of sets, $\text{Hom}(\alpha, \text{Forget}(M))$. Then
 %   \begin{equation}
-%     Forget(extend (f)) \circ X = f 
+%     Forget(extend (f)) \circ X = f
 %   \end{equation}
 
 
 % \lemma{Extensionality}
-  
+
 % Let $f$ and $g$ be module homomorphisms, $\text{Hom}(F(\alpha), M)$. Then these two maps are equal whenever
 %   \begin{equation}
 %     Forget(f) \circ X = Forget(g) \circ X
 %   \end{equation}
 
 % The universal property follows from these two definitions and two lemmas.
-% We need to prove the natural isomorphism of functors 
+% We need to prove the natural isomorphism of functors
 % $\text{Hom}(F(\alpha), M) \cong \text{Hom}(\alpha, \text{Forget}(M))$.
 
 % The map $\text{Hom}(F(\alpha), M) \rightarrow \text{Hom}(\alpha, \text{Forget}(M))$ is given by composition
-% with $X$. If $f : \text{Hom}(F(\alpha), M)$, then 
+% with $X$. If $f : \text{Hom}(F(\alpha), M)$, then
 % $Forget(f) \circ X : \text{Hom}(\alpha, \text{Forget}(M))$.
 
 % The other direction of the isomorphism is $extend$.
@@ -657,7 +671,7 @@ universal property.
 
 % To prove this is an isomorphism we need to prove that for any
 %  $f : \text{Hom}(\alpha, Forget(M))$, $Forget(extend (f)) \circ X = f$ and
-% for any $f : \text{Hom}(F(\alpha), M)$, $extend (Forget(f) \circ X) = f$. 
+% for any $f : \text{Hom}(F(\alpha), M)$, $extend (Forget(f) \circ X) = f$.
 % The first equality is part of our Lean definition. The second we prove by applying
 % our extensionality lemma so we have to prove $Forget(extend (Forget(f) \circ X)) \circ X = Forget(f) \circ X$.
 % Apply the first lemma to the right hand side proves the equality.
@@ -665,12 +679,12 @@ universal property.
 % We also need to prove that $F$ is a functor. Given  Types $\alpha, \beta$ and a map $f : \alpha \to \beta$,
 % the map $F(f) : \text{Hom}(F(\alpha), F(\beta))$ is given by $F(f) = extend (X \circ f)$.
 
-% To prove $F(id) = id$ we apply the extensionality lemma and we now need to prove 
-% $Forget(extend (X \circ id)) \circ X = Forget(id) \circ X$. This is a direction application 
+% To prove $F(id) = id$ we apply the extensionality lemma and we now need to prove
+% $Forget(extend (X \circ id)) \circ X = Forget(id) \circ X$. This is a direction application
 % of Lemma \ref{extendX}.
 
-% To prove $F(g \circ f) = F(g) \circ F(f)$, then first apply extensionality and 
-% we need to prove $Forget(extend (X \circ g \circ f)) \circ X = 
+% To prove $F(g \circ f) = F(g) \circ F(f)$, then first apply extensionality and
+% we need to prove $Forget(extend (X \circ g \circ f)) \circ X =
 %   Forget(extend (X \circ g) \circ extend (X \circ f)) \circ X$. Three applications of Lemma \ref{extendX}
 %   can prove this. The first three equalities in the below expression follow from Lemma \ref{extendX},
 %   the final one is functoriality of the forgetful functor.
@@ -686,8 +700,8 @@ universal property.
 
 % We now prove naturality in both arguments. There are two equalities we need to prove
 
-% \lemma 
-% For any Types $\alpha, \beta$, modules $M, N$ and any map $f : \beta \to \alpha$, and any module homomorphism 
+% \lemma
+% For any Types $\alpha, \beta$, modules $M, N$ and any map $f : \beta \to \alpha$, and any module homomorphism
 % $g : \text{Hom}(M, N)$, and any map $h : \text{Hom}(F(\alpha), M)$
 
 % \begin{equation}
@@ -699,7 +713,7 @@ universal property.
 % The other direction of naturality is given bibliography
 
 % \lemma
-% For any Types $\alpha, \beta$, modules $M, N$ and any map $f : \beta \to \alpha$, and any module homomorphism 
+% For any Types $\alpha, \beta$, modules $M, N$ and any map $f : \beta \to \alpha$, and any module homomorphism
 % $g : \text{Hom}(M, N)$, and any map $h : \text{Hom}(\alpha, Forget(M))$.
 
 % \begin{equation}
@@ -711,7 +725,7 @@ universal property.
 %   Forget(extend(Forget (g) \circ h \circ f)) \circ X = Forget(g \circ extend (h) \circ F(f)) \circ X
 % \end{equation}
 
-% We apply Lemma \ref{extendX} to the left hand side and replace $F(f)$ with its definition and 
+% We apply Lemma \ref{extendX} to the left hand side and replace $F(f)$ with its definition and
 % then we see it suffices to prove
 
 % \begin{equation}

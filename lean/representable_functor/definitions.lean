@@ -75,16 +75,6 @@ nat_iso.of_components
   (λ X,
     { hom := λ FX, { app := λ Y f, f.app X FX },
       inv := λ f,
-      --  let s : limits.cone (comma.snd ((category_theory.functor.const (discrete unit)).obj X) (𝟭 Cᵒᵖ) ⋙ F) :=
-      --   { X := unit,
-      --     π :=
-      --     { app := λ Y g, begin
-      --         dsimp at *,
-      --         have := g.app,
-      --         dsimp at *,
-
-      --     end } },
-
       begin
         dsimp at *,
         have := f.app,
@@ -93,12 +83,13 @@ nat_iso.of_components
           (limits.limit.cone _),
         dsimp [as_cone] at *,
         tidy,
-        have := f.app (unop j.right),
         rcases j with ⟨⟨⟩, j, g⟩,
         dsimp at *,
-        dsimp at this,
-        have := this _,
-
+        have x : F.obj X := sorry,
+        exact F.map g x,
+        dsimp,
+        funext,
+        
 
       end }  )
   _
