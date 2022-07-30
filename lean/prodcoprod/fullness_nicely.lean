@@ -350,6 +350,15 @@ instance of_cat_full : full (@of_cat C _) :=
     simpa using this
   end }
 
+instance of_cat_faithful : faithful (@of_cat C _) :=
+{ map_injective' := λ X Y f g h, begin
+    have := congr_arg transformation_inverse h,
+    simp [transformation_inverse] at this,
+    erw [category.id_comp] at this,
+    erw [category.id_comp] at this,
+    assumption
+end }
+
 def normalize {X : C} {Y : prod_coprod C}
   (f : (of_cat' X) ⟶ Y) : hom_syntax (of_cat' X) Y :=
 transformation_syntax (transformation_inverse f)
