@@ -407,15 +407,11 @@ def to_presheaf : prod_coprod C ⥤ (Cᵒᵖ ⥤ Type) :=
     erw quotient.lift_on_mk,
     simp [to_presheaf_norm_hom_comp] end }
 
-@[simp] lemma to_presheaf_inl {X Y : prod_coprod C} : to_presheaf.map (inl : X ⟶ X.coprod Y) =
-  Pcoprod_inl := rfl
-
-@[simp] lemma to_presheaf_inr {X Y : prod_coprod C} : to_presheaf.map (inr : Y ⟶ X.coprod Y) =
-  Pcoprod_inr := rfl
-
 @[simp] lemma to_presheaf_obj_of_cat (X : C) : to_presheaf.obj (of_cat' X) = yoneda.obj X := rfl
+
 @[simp] lemma to_presheaf_obj_prod (X Y : prod_coprod C) : to_presheaf.obj (prod X Y) =
   Pprod (to_presheaf_obj X) (to_presheaf_obj Y) := rfl
+
 @[simp] lemma to_presheaf_obj_coprod (X Y : prod_coprod C) : to_presheaf.obj (coprod X Y) =
   Pcoprod (to_presheaf_obj X) (to_presheaf_obj Y) := rfl
 
@@ -430,6 +426,26 @@ begin
   intros, refl
 end
 
+@[simp] lemma to_presheaf_coprod_mk {X Y Z : prod_coprod C}
+  (f : X ⟶ Z) (g : Y ⟶ Z) :
+  to_presheaf.map (coprod_mk f g) = Pcoprod_lift (to_presheaf.map f) (to_presheaf.map g) :=
+begin
+  refine quotient.induction_on₂ f g _,
+  intros, refl
+end
+
+@[simp] lemma to_presheaf_fst {X Y : prod_coprod C} :
+  to_presheaf.map (fst : X.prod Y ⟶ X) = Pprod_fst := rfl
+
+@[simp] lemma to_presheaf_snd {X Y : prod_coprod C} :
+  to_presheaf.map (snd : X.prod Y ⟶ Y) = Pprod_snd := rfl
+
+@[simp] lemma to_presheaf_inl {X Y : prod_coprod C} :
+  to_presheaf.map (inl : X ⟶ X.coprod Y) = Pcoprod_inl := rfl
+
+@[simp] lemma to_presheaf_inr {X Y : prod_coprod C} :
+  to_presheaf.map (inr : Y ⟶ X.coprod Y) = Pcoprod_inr := rfl
+
 end norm_hom
 
 def reverse_map : Π {X : C} {Y : prod_coprod C}, (to_presheaf.obj Y).obj (opposite.op X) →
@@ -440,53 +456,58 @@ def reverse_map : Π {X : C} {Y : prod_coprod C}, (to_presheaf.obj Y).obj (oppos
   (λ f, (reverse_map f).comp norm_hom.inl)
   (λ f, (reverse_map f).comp norm_hom.inr)
 
-lemma reverse_map_comp {X : C} {Y Z : prod_coprod C} (f : (to_presheaf.obj Y).obj (opposite.op X))
-  (g : to_presheaf.obj Y ⟶ to_presheaf.obj Z) :
-  reverse_map (g.app _ f) = reverse_map g ≫ _
-
-lemma reverse_map_to_presheaf : Π {X : C} {Y : prod_coprod C} {b : bool}
-  (f : norm_hom b (of_cat' X) Y),
-  of_norm_hom_tt (reverse_map (yoneda_equiv.1
-    (to_presheaf.map (of_norm_hom_bool f)))) = of_norm_hom_bool f
-| _ _ _ (norm_hom.of_cat_ff f) := by simp [reverse_map, of_norm_hom_bool]
-| _ _ _ (norm_hom.prod_mk_ff f g) := begin
-  have := reverse_map_to_presheaf f,
-  have := reverse_map_to_presheaf g,
+lemma reverse_map_to_presheaf : Π {X Y : prod_coprod C} {b : bool}
+  (f : norm_hom b X Y) ⦃Z : C⦄ (z : (to_presheaf.obj X).obj (op Z)),
+  of_norm_hom_tt (reverse_map ((to_presheaf.map (of_norm_hom_bool f)).app (op Z) z)) =
+  of_norm_hom_tt (reverse_map z) ≫ of_norm_hom_bool f
+| _ _ _ (norm_hom.of_cat_ff f) _ _ := by simp [reverse_map, of_norm_hom_bool]
+| _ _ _ (norm_hom.prod_mk_ff f g) _ z := begin
+  have := reverse_map_to_presheaf f z,
+  have := reverse_map_to_presheaf g z,
   clear_aux_decl,
   apply prod_hom_ext;
   simp [reverse_map, of_norm_hom_bool, *] at *
 end
-| _ _ _ norm_hom.inl_ff := begin
-  simp [reverse_map, of_norm_hom_bool],
-  erw [category.id_comp]
+| _ _ _ (norm_hom.coprod_mk_ff f g) _ z := begin
+  have hf := reverse_map_to_presheaf f,
+  have hg := reverse_map_to_presheaf g,
+  simp [reverse_map, of_norm_hom_bool] at hf hg ⊢,
+  cases z; simp *,
 end
-| _ _ _ norm_hom.inr_ff := begin
-  simp [reverse_map, of_norm_hom_bool],
-  erw [category.id_comp]
+| _ _ _ norm_hom.fst_ff _ z := begin
+  simp [reverse_map, of_norm_hom_bool]
 end
-| _ _ _ (norm_hom.id _) := begin
-  simp [reverse_map, of_norm_hom_bool],
-  erw [of_cat.map_id],
-  refl
+| _ _ _ norm_hom.snd_ff _ z := begin
+  simp [reverse_map, of_norm_hom_bool]
 end
-| X Y _ (@norm_hom.comp_ff _ _ _ Z _ f g) := begin
-  have := reverse_map_to_presheaf f,
-  clear_aux_decl,
-  simp [reverse_map, of_norm_hom_bool] at *,
-  conv_rhs { rw ← this }, clear this,
-  refine norm_hom.norm_hom.rec_on_ff g _ _ _ _ _ _ _,
-  { intros,
-    simp [reverse_map] },
-  { intros,
-    have := @reverse_map.equations._eqn_2 C _ X Y_1 Z_1,
-    simp only [this],
+| _ _ _ norm_hom.inl_ff _ z := begin
+  simp [reverse_map, of_norm_hom_bool]
+end
+| _ _ _ norm_hom.inr_ff _ z := begin
+  simp [reverse_map, of_norm_hom_bool]
+end
+| _ _ _ (norm_hom.id _) _ z := begin
+  simp [reverse_map, of_norm_hom_bool]
+end
+| X Y _ (@norm_hom.comp_ff _ _ _ Z _ f g) _ _ := begin
+  have hf := reverse_map_to_presheaf f,
+  have hg := reverse_map_to_presheaf g,
+  simp [reverse_map, of_norm_hom_bool] at hf hg ⊢,
+  rw [hg, hf, category.assoc],
+end
+
+instance of_cat_full : full (@of_cat C _) :=
+{ preimage := λ X Y f, ((to_presheaf.map f).app (op X) (𝟙 X)),
+  witness' := begin
+    intros X Y f,
+    refine quotient.induction_on f _,
+    intro f,
     dsimp,
-    simp,
-    apply prod_hom_ext;
-    simp,
-     }
-
-end
-
-
+    have := reverse_map_to_presheaf f (𝟙 X),
+    dsimp [reverse_map] at this,
+    simp at this,
+    erw [category.id_comp] at this,
+    exact this
+  end }
+#print axioms prod_coprod.of_cat_full
 end prod_coprod
