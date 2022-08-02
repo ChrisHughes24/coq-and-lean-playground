@@ -711,11 +711,69 @@ lemma to_norm_hom_to_norm_hom2 {X Y : prod_coprod C} (f : norm_hom X Y) :
 by induction f; simp [norm_hom.to_norm_hom2, norm_hom2.to_norm_hom, *,
    norm_hom.prod_mk, norm_hom.coprod_mk]
 
-lemma norm_hom2.comp_assoc {W X Y Z : prod_coprod C} (f : norm_hom2 W X) (g : norm_hom2 X Y) (h : norm_hom2 Y Z) :
-  ((f.comp g).comp h).to_norm_hom = (f.comp (g.comp h)).to_norm_hom :=
-begin
-  induction f generalizing g h; cases g; cases h; simp [norm_hom2.comp, *]
+lemma forall_eq {α : Sort*} (p : Π (a : α), a = a → Prop) (a : α) :
+  (∀ (h : a = a), p a h) = p a rfl :=
+by simp
 
+@[simp] lemma forall_eq_comp {α β : Sort*} (a b : β) (p : α → a = b → Prop) :
+  (∀ (x : α) (h : a = b), p x h) = (∀ (h : a = b) (x : α), p x h) :=
+by rw [forall_swap]
+
+@[simp] lemma forall_eq_eq {α : Sort*} (a : α) (p : Π (b : α), a = b → Prop) :
+  (∀ (b : α) (h : a = b), p b h) = p a rfl :=
+sorry
+
+@[simp] lemma forall_eq_eq₂ {α : Sort*} (a : α) (p : Π (b : α), b = a → Prop) :
+  (∀ (b : α) (h : b = a), p b h) = p a rfl :=
+sorry
+
+@[simp] lemma forall_eq_eq₃ {α β : Sort*} (a : α) (p : Π (b : α), β → a = b → Prop) :
+  (∀ (b : α) (x : β) (h : a = b), p b x h) = ∀ x : β, p a x rfl :=
+sorry
+
+@[simp] lemma forall_eq_eq₄ {α β : Sort*} (a : α) (p : Π (b : α), β → b = a → Prop) :
+  (∀ (b : α) (x : β) (h : b = a), p b x h) = ∀ x : β, p a x rfl :=
+sorry
+
+@[simp] lemma forall_eq_eq₅ {α β γ : Sort*} (a : α) (p : Π (b : α), β → γ → a = b → Prop) :
+  (∀ (b : α) (x : β) (y : γ) (h : a = b), p b x y h) = ∀ (x : β) (y : γ), p a x y rfl :=
+sorry
+
+@[simp] lemma forall_eq_eq₆ {α β γ : Sort*} (a : α) (p : Π (b : α), β → γ → b = a → Prop) :
+  (∀ (b : α) (x : β) (y : γ) (h : b = a), p b x y h) = ∀ (x : β) (y : γ), p a x y rfl :=
+sorry
+
+lemma eq_imp {α : Sort*} (p : Prop) (a : α) :
+  ((a = a) → p) = p := by simp
+
+lemma norm_hom2.comp_assoc_aux {W X X' Y Y' Z : prod_coprod C} (hX : X' = X) (hY : Y' = Y)
+  (f : norm_hom2 W X) (g : norm_hom2 X' Y) (h : norm_hom2 Y' Z) :
+  ((f.comp (show norm_hom2 X Y, from eq.rec_on hX g)).comp
+    (show norm_hom2 Y Z, from eq.rec_on hY h)).to_norm_hom =
+  (f.comp ((show norm_hom2 X Y, from eq.rec_on hX g).comp
+    (show norm_hom2 Y Z, from eq.rec_on hY h))).to_norm_hom :=
+begin
+  revert h, revert Z, revert g, revert hY, revert Y', revert Y, revert hX, revert X',
+  induction f; intros X' hX Y Y' hY g; revert Y';
+  induction g; cases hX; dsimp; clear hX; intros Y' hY Z h;
+  try { revert g_Y }; induction h;
+  try { intros _ _ hY; cases hY };
+  try { dsimp [norm_hom2.comp, norm_hom2.of_cat] };
+  simp * at *,
+  --revert hY, revert h Z Y', revert hX, revert g Y X',
+  -- induction f;
+  -- intros X' Y g; induction g; intro hX; cases hX;
+  -- dsimp;
+  -- simp [norm_hom2.comp, norm_hom2.to_norm_hom, eq_imp, forall_eq, *] at *;
+  -- intros Z h; induction h;
+  -- dsimp;
+  -- simp [norm_hom2.comp, norm_hom2.to_norm_hom, eq_imp, forall_eq, *] at *,
+
+
+  --intros Y' Z h; induction h; intro hY; cases hY;
+  -- dsimp at *;
+  -- simp only [norm_hom2.comp, norm_hom2.to_norm_hom, eq_imp, forall_eq, forall_eq_comp] at *;
+  -- try { simp * },
 end
 
 -- def comp_fst : Π {X Y Z : prod_coprod C} (f : norm_hom X (prod Y Z)), norm_hom X Y
