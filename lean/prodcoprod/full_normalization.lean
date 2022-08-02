@@ -45,9 +45,9 @@ inductive rel : Π {X Y : prod_coprod C}, syntax X Y → syntax X Y → Prop
 | of_cat_id {X : C} : rel (syntax.of_cat (𝟙 X)) (syntax.id (of_cat' X))
 | of_cat_comp {X Y Z : C} (f : X ⟶ Y) (g : Y ⟶ Z) :
   rel (syntax.of_cat (f ≫ g)) (syntax.comp (syntax.of_cat f) (syntax.of_cat g))
-| mk_comp_fst {X Y Z : prod_coprod C} (f : syntax X Y) (g : syntax X Z) :
+| mk_fst_comp {X Y Z : prod_coprod C} (f : syntax X Y) (g : syntax X Z) :
   rel (syntax.comp (syntax.prod_mk f g) syntax.fst) f
-| mk_comp_snd {X Y Z : prod_coprod C} (f : syntax X Y) (g : syntax X Z) :
+| mk_snd_comp {X Y Z : prod_coprod C} (f : syntax X Y) (g : syntax X Z) :
   rel (syntax.comp (syntax.prod_mk f g) syntax.snd) g
 | prod_eta {X Y Z : prod_coprod C} (f : syntax X (Y.prod Z)) :
   rel (syntax.prod_mk (f.comp syntax.fst) (f.comp syntax.snd)) f
@@ -128,13 +128,13 @@ of_syntax fst
 def snd {X Y : prod_coprod C} : (X.prod Y) ⟶ Y :=
 of_syntax snd
 
-@[simp] lemma prod_mk_comp_fst {X Y Z : prod_coprod C} (f : X ⟶ Y) (g : X ⟶ Z) :
+@[simp] lemma prod_mk_fst_comp {X Y Z : prod_coprod C} (f : X ⟶ Y) (g : X ⟶ Z) :
   prod_mk f g ≫ fst = f :=
-quotient.induction_on₂ f g (λ f g, quotient.sound (syntax.rel.mk_comp_fst _ _))
+quotient.induction_on₂ f g (λ f g, quotient.sound (syntax.rel.mk_fst_comp _ _))
 
-@[simp] lemma prod_mk_comp_snd {X Y Z : prod_coprod C} (f : X ⟶ Y) (g : X ⟶ Z) :
+@[simp] lemma prod_mk_snd_comp {X Y Z : prod_coprod C} (f : X ⟶ Y) (g : X ⟶ Z) :
   prod_mk f g ≫ snd = g :=
-quotient.induction_on₂ f g (λ f g, quotient.sound (syntax.rel.mk_comp_snd _ _))
+quotient.induction_on₂ f g (λ f g, quotient.sound (syntax.rel.mk_snd_comp _ _))
 
 lemma prod_mk_eta {X Y Z : prod_coprod C} (f : X ⟶ Y.prod Z) :
   prod_mk (f ≫ fst) (f ≫ snd) = f :=
@@ -208,31 +208,31 @@ begin
   rw [h₁, h₂, coprod_mk_eta]
 end
 
-def wf_rel (x y : (prod_coprod C × prod_coprod C) ⊕
-  (prod_coprod C × prod_coprod C × prod_coprod C)) :Prop :=
-sum.lex (measure sizeof) (measure sizeof) x y
+-- def wf_rel (x y : (prod_coprod C × prod_coprod C) ⊕
+--   (prod_coprod C × prod_coprod C × prod_coprod C)) :Prop :=
+-- sum.lex (measure sizeof) (measure sizeof) x y
 
 
 
-@[simp] def sizeof2 : prod_coprod C → ℕ
-| (of_cat' X) := 0
-| (prod X Y) := sizeof2 X + sizeof2 Y + 0
-| (coprod X Y) := sizeof2 X + sizeof2 Y + 1
+-- @[simp] def sizeof2 : prod_coprod C → ℕ
+-- | (of_cat' X) := 0
+-- | (prod X Y) := sizeof2 X + sizeof2 Y + 0
+-- | (coprod X Y) := sizeof2 X + sizeof2 Y + 1
 
-def hwf_rel_wf : has_well_founded ((prod_coprod C × prod_coprod C) ⊕
-  (prod_coprod C × prod_coprod C × prod_coprod C)) :=
-⟨_, measure_wf (λ x, sum.cases_on x
-    (λ x, sizeof x.1 + sizeof x.2)
-    (λ x, sizeof x.1 + sizeof x.2.1 + sizeof x.2.2))⟩
+-- def hwf_rel_wf : has_well_founded ((prod_coprod C × prod_coprod C) ⊕
+--   (prod_coprod C × prod_coprod C × prod_coprod C)) :=
+-- ⟨_, measure_wf (λ x, sum.cases_on x
+--     (λ x, sizeof x.1 + sizeof x.2)
+--     (λ x, sizeof x.1 + sizeof x.2.1 + sizeof x.2.2))⟩
 
-@[simp] lemma hwf_rel_wf_simp :@has_well_founded.r _ (@hwf_rel_wf C _) =
-  measure (λ x, sum.cases_on x
-    (λ x, sizeof x.1 + sizeof x.2)
-    (λ x, sizeof x.1 + sizeof x.2.1 + sizeof x.2.2)) := rfl
+-- @[simp] lemma hwf_rel_wf_simp :@has_well_founded.r _ (@hwf_rel_wf C _) =
+--   measure (λ x, sum.cases_on x
+--     (λ x, sizeof x.1 + sizeof x.2)
+--     (λ x, sizeof x.1 + sizeof x.2.1 + sizeof x.2.2)) := rfl
 
-meta def wf_dec_tac : tactic unit :=
-`[try { simp },
-  well_founded_tactics.default_dec_tac]
+-- meta def wf_dec_tac : tactic unit :=
+-- `[try { simp },
+--   well_founded_tactics.default_dec_tac]
 
 /-- Defining two maps by mutual induction. Morally we are defining the following.
   First - `norm_type (X Y : prod_coprod C) : Type`
@@ -241,56 +241,380 @@ meta def wf_dec_tac : tactic unit :=
     The type of normal forms of maps `(X.prod Y) ⟶ Z` that cannot be written
     `fst ≫ f` or `snd ≫ f` for any `f`
 -/
-@[simp] def norm_type :
+
+-- @[simp] def norm_type :
+--   ((prod_coprod C × prod_coprod C) ⊕
+--   (prod_coprod C × prod_coprod C × prod_coprod C)) → Type
+-- | (sum.inl (coprod X Y, Z)) := norm_type (sum.inl (X, Z)) × norm_type (sum.inl (Y, Z))
+-- | (sum.inl (prod X Y, Z)) :=
+--   norm_type (sum.inl (X, Z)) ⊕ norm_type (sum.inl (Y, Z))
+--   ⊕ norm_type (sum.inr (X, Y, Z))
+-- | (sum.inl (of_cat' X, of_cat' Y)) := X ⟶ Y
+-- | (sum.inl (of_cat' X, prod Y Z)) :=
+--   norm_type (sum.inl (of_cat' X, Y)) × norm_type (sum.inl (of_cat' X, Z))
+-- | (sum.inl (of_cat' X, coprod Y Z)) :=
+--   norm_type (sum.inl (of_cat' X, Y)) ⊕ norm_type (sum.inl (of_cat' X, Z))
+-- | (sum.inr (W, X, coprod Y Z)) :=
+--   norm_type (sum.inr (W, X, Y)) ⊕  -- (f : prod W X ⟶ Y) ≫ inl
+--   norm_type (sum.inr (W, X, Z))  -- (f : prod W X ⟶ Z) ≫ inr
+-- | (sum.inr (W, X, prod Y Z)) :=
+--   (norm_type (sum.inr (W, X, Y)) × norm_type (sum.inr (W, X, Z))) ⊕ -- prod_mk _ _
+--   (norm_type (sum.inl (W, Y)) × norm_type (sum.inl (X, Z))) ⊕
+--   (norm_type (sum.inl (W, Z)) × norm_type (sum.inl (X, Y)))
+-- | (sum.inr (X, Y, of_cat' Z)) := empty
+-- using_well_founded {
+--   dec_tac := wf_dec_tac,
+--  rel_tac := λ _ _, `[exact hwf_rel_wf] }
+
+inductive norm_hom :
   ((prod_coprod C × prod_coprod C) ⊕
   (prod_coprod C × prod_coprod C × prod_coprod C)) → Type
-| (sum.inl (X, prod Y Z)) := norm_type (sum.inl (X, Y)) × norm_type (sum.inl (X, Z))
-| (sum.inl (of_cat' X, coprod Y Z)) :=
-  norm_type (sum.inl (of_cat' X, Y)) ⊕ norm_type (sum.inl (of_cat' X, Z))
-| (sum.inl (of_cat' X, of_cat' Y)) := X ⟶ Y
-| (sum.inl (coprod X Y, Z)) := norm_type (sum.inl (X, Z)) × norm_type (sum.inl (Y, Z))
-| (sum.inl (prod X Y, of_cat' Z)) :=
-  norm_type (sum.inl (X, of_cat' Z)) ⊕ norm_type (sum.inl (X, of_cat' Z))
-| (sum.inl (prod X Y, Z)) :=
-  norm_type (sum.inl (X, Z)) ⊕ -- fst ≫ (f : X ⟶  Z)
-  norm_type (sum.inl (Y, Z)) ⊕ -- snd ≫ (f : Y ⟶ Z)
-  norm_type (sum.inr (X, Y, Z))
-| (sum.inr (W, X, coprod Y Z)) :=
-  norm_type (sum.inr (W, X, Y)) ⊕  -- (f : prod W X ⟶ Y) ≫ inl
-  norm_type (sum.inr (W, X, Z))  -- (f : prod W X ⟶ Z) ≫ inr
-| (sum.inr (W, X, prod Y Z)) :=
-  (norm_type (sum.inr (W, X, Y)) × norm_type (sum.inr (W, X, Z))) ⊕ -- prod_mk _ _
-  (norm_type (sum.inl (W, Y)) × norm_type (sum.inl (X, Z))) ⊕
-  (norm_type (sum.inl (W, Z)) × norm_type (sum.inl (X, Y)))
-| (sum.inr (X, Y, of_cat' Z)) := empty
-using_well_founded {
-  dec_tac := wf_dec_tac,
-  rel_tac := λ _ _, `[exact hwf_rel_wf] }
+| coprod_mk {X Y Z : prod_coprod C} :
+  norm_hom (sum.inl (X, Z)) → norm_hom (sum.inl (Y, Z)) →
+  norm_hom (sum.inl (coprod X Y, Z))
+| fst_comp {X Y Z : prod_coprod C} : norm_hom (sum.inl (X, Z)) →
+  norm_hom (sum.inl (prod X Y, Z))
+| snd_comp {X Y Z : prod_coprod C} : norm_hom (sum.inl (Y, Z)) →
+  norm_hom (sum.inl (prod X Y, Z))
+| of_not_proj {X Y Z : prod_coprod C} : norm_hom (sum.inr (X, Y, Z)) →
+  norm_hom (sum.inl (prod X Y, Z))
+| of_cat {X Y : C} : (X ⟶ Y) → norm_hom (sum.inl (of_cat' X, of_cat' Y))
+| comp_inl_of_cat {X : C} {Y Z : prod_coprod C} : norm_hom (sum.inl (of_cat' X, Y)) →
+  norm_hom (sum.inl (of_cat' X, coprod Y Z))
+| comp_inr_of_cat {X : C} {Y Z : prod_coprod C} : norm_hom (sum.inl (of_cat' X, Z)) →
+  norm_hom (sum.inl (of_cat' X, coprod Y Z))
+| prod_mk_of_cat {X : C} {Y Z : prod_coprod C} : norm_hom (sum.inl (of_cat' X, Y)) →
+  norm_hom (sum.inl (of_cat' X, Z)) → norm_hom (sum.inl (of_cat' X, prod Y Z))
+| comp_inl_not_proj {W X Y Z : prod_coprod C} : norm_hom (sum.inr (W, X, Y)) →
+  norm_hom (sum.inr (W, X, coprod Y Z))
+| comp_inr_not_proj {W X Y Z : prod_coprod C} : norm_hom (sum.inr (W, X, Z)) →
+  norm_hom (sum.inr (W, X, coprod Y Z))
+| prod_mk_not_proj {W X Y Z : prod_coprod C} : norm_hom (sum.inr (W, X, Y)) →
+  norm_hom (sum.inr (W, X, Z)) → norm_hom (sum.inr (W, X, prod Y Z))
+| prod_mk_not_proj_fst_comp {W X Y Z : prod_coprod C} : norm_hom (sum.inr (W, X, Y)) →
+  norm_hom (sum.inl (W, Z)) → norm_hom (sum.inr (W, X, prod Y Z))
+| prod_mk_not_proj_snd_comp {W X Y Z : prod_coprod C} : norm_hom (sum.inr (W, X, Y)) →
+  norm_hom (sum.inl (X, Z)) → norm_hom (sum.inr (W, X, prod Y Z))
+| prod_mk_fst_comp_not_proj {W X Y Z : prod_coprod C} : norm_hom (sum.inl (W, Y)) →
+  norm_hom (sum.inr (W, X, Z)) → norm_hom (sum.inr (W, X, prod Y Z))
+| prod_mk_snd_comp_not_proj {W X Y Z : prod_coprod C} : norm_hom (sum.inl (X, Y)) →
+  norm_hom (sum.inr (W, X, Z)) → norm_hom (sum.inr (W, X, prod Y Z))
+| prod_mk_fst_comp_snd_comp {W X Y Z : prod_coprod C} :
+  norm_hom (sum.inl (W, Y)) → norm_hom (sum.inl (X, Z)) →
+  norm_hom (sum.inr (W, X, prod Y Z))
+| prod_mk_snd_comp_fst_comp {W X Y Z : prod_coprod C} :
+  norm_hom (sum.inl (X, Y)) → norm_hom (sum.inl (W, Z)) →
+  norm_hom (sum.inr (W, X, prod Y Z))
 
 variables {W X Y Z : prod_coprod C}
 
-@[simp] lemma norm_type_inl_prod_right : norm_type (sum.inl (X, prod Y Z)) =
-  (norm_type (sum.inl (X, Y)) × norm_type (sum.inl (X, Z))) :=
-by cases X; simp
+open norm_hom
 
-@[simp] lemma norm_type_inl_prod_left : norm_type (sum.inl (prod X Y, Z)) =
-  (norm_type (sum.inl (X, Z)) ⊕ norm_type (sum.inl (Y, Z)) ⊕
-  norm_type (sum.inr (X, Y, Z))) :=
-by induction Z; simp *
+def norm_hom.comp_inl : Π {X Y Z : prod_coprod C}, norm_hom (sum.inl (X, Y)) →
+  norm_hom (sum.inl (X, coprod Y Z))
+| (of_cat' X) _ _ f := norm_hom.comp_inl_of_cat f
+| (coprod W X) Y Z (norm_hom.coprod_mk f g) := norm_hom.coprod_mk (norm_hom.comp_inl f) (norm_hom.comp_inl g)
+| (prod W X) Y Z (norm_hom.fst_comp f) := norm_hom.fst_comp (norm_hom.comp_inl f)
+| (prod W X) Y Z (norm_hom.snd_comp f) := norm_hom.snd_comp (norm_hom.comp_inl f)
+| (prod W X) Y Z (norm_hom.of_not_proj f) := norm_hom.of_not_proj (norm_hom.comp_inl_not_proj f)
 
-@[simp] def to_presheaf_syntax :
-  Π (f : (Σ (X Y : prod_coprod C), syntax X Y) ⊕
-  (Σ (X Y Z : prod_coprod C),
-    { f : syntax (X.prod Y) Z //
-      (∀ g, of_syntax f ≠ fst ≫ g) ∧
-      (∀ g, of_syntax f ≠ snd ≫ g) } )),
-  (show Type, from sum.cases_on f
-    (λ f, norm_type (sum.inl (f.1, f.2.1)))
-    (λ f, norm_type (sum.inr (f.1, f.2.1, f.2.2.1))))
-| (sum.inl ⟨_, _, syntax.of_cat f⟩) := by simp; exact f
-| (sum.inl ⟨X, _, @syntax.prod_mk _ _ _ Y Z f g⟩) := by
-  simp; exact (to_presheaf_syntax (sum.inl ⟨_, _, f⟩), to_presheaf_syntax (sum.inl ⟨_, _, g⟩))
-| (sum.inl ⟨_, _, syntax.fst⟩) := begin simp, end
+def norm_hom.comp_inr : Π {X Y Z : prod_coprod C}, norm_hom (sum.inl (X, Z)) →
+  norm_hom (sum.inl (X, coprod Y Z))
+| (of_cat' X) _ _ f := norm_hom.comp_inr_of_cat f
+| (coprod W X) Y Z (norm_hom.coprod_mk f g) := norm_hom.coprod_mk (norm_hom.comp_inr f) (norm_hom.comp_inr g)
+| (prod W X) Y Z (norm_hom.fst_comp f) := norm_hom.fst_comp (norm_hom.comp_inr f)
+| (prod W X) Y Z (norm_hom.snd_comp f) := norm_hom.snd_comp (norm_hom.comp_inr f)
+| (prod W X) Y Z (norm_hom.of_not_proj f) := norm_hom.of_not_proj (norm_hom.comp_inr_not_proj f)
+
+def norm_hom.id : Π (X : prod_coprod C), norm_hom (sum.inl (X, X))
+| (of_cat' X) := norm_hom.of_cat (𝟙 X)
+| (prod X Y) := norm_hom.of_not_proj
+  (norm_hom.prod_mk_fst_comp_snd_comp (norm_hom.id X) (norm_hom.id Y))
+| (coprod X Y) :=
+  norm_hom.coprod_mk
+    (norm_hom.comp_inl (norm_hom.id _))
+    (norm_hom.comp_inr (norm_hom.id _))
+
+def norm_hom.inl {X Y : prod_coprod C} : norm_hom (sum.inl (X, coprod X Y)) :=
+norm_hom.comp_inl (norm_hom.id _)
+
+def norm_hom.inr {X Y : prod_coprod C} : norm_hom (sum.inl (Y, coprod X Y)) :=
+norm_hom.comp_inr (norm_hom.id _)
+
+def norm_hom.fst {X Y : prod_coprod C} : norm_hom (sum.inl (prod X Y, X)) :=
+norm_hom.fst_comp (norm_hom.id _)
+
+def norm_hom.snd {X Y : prod_coprod C} : norm_hom (sum.inl (prod X Y, Y)) :=
+norm_hom.snd_comp (norm_hom.id _)
+
+def norm_hom.prod_mk : Π {X Y Z : prod_coprod C} (f : norm_hom (sum.inl (X, Y)))
+  (g : norm_hom (sum.inl (X, Z))), norm_hom (sum.inl (X, prod Y Z))
+| (of_cat' X) Y Z f g := norm_hom.prod_mk_of_cat f g
+| (prod W X) Y Z (norm_hom.fst_comp f) (norm_hom.fst_comp g) :=
+  norm_hom.fst_comp (norm_hom.prod_mk f g)
+| (prod W X) Y Z (norm_hom.snd_comp f) (norm_hom.snd_comp g) :=
+  norm_hom.snd_comp (norm_hom.prod_mk f g)
+| (prod W X) Y Z (norm_hom.fst_comp f) (norm_hom.snd_comp g) :=
+  norm_hom.of_not_proj (norm_hom.prod_mk_fst_comp_snd_comp f g)
+| (prod W X) Y Z (norm_hom.snd_comp f) (norm_hom.fst_comp g) :=
+  norm_hom.of_not_proj (norm_hom.prod_mk_snd_comp_fst_comp f g)
+| (prod W X) Y Z (norm_hom.of_not_proj f) (norm_hom.fst_comp g) :=
+  norm_hom.of_not_proj (norm_hom.prod_mk_not_proj_fst_comp f g)
+| (prod W X) Y Z (norm_hom.of_not_proj f) (norm_hom.snd_comp g) :=
+  norm_hom.of_not_proj (norm_hom.prod_mk_not_proj_snd_comp f g)
+| (prod W X) Y Z (norm_hom.fst_comp f) (norm_hom.of_not_proj g)  :=
+  norm_hom.of_not_proj (norm_hom.prod_mk_fst_comp_not_proj f g)
+| (prod W X) Y Z (norm_hom.snd_comp f) (norm_hom.of_not_proj g)  :=
+  norm_hom.of_not_proj (norm_hom.prod_mk_snd_comp_not_proj f g)
+| (prod W X) Y Z (norm_hom.of_not_proj f) (norm_hom.of_not_proj g)  :=
+  norm_hom.of_not_proj (norm_hom.prod_mk_not_proj f g)
+| (coprod W X) Y Z (norm_hom.coprod_mk f g) (norm_hom.coprod_mk h i) :=
+  norm_hom.coprod_mk (norm_hom.prod_mk f h) (norm_hom.prod_mk g i)
+--set_option timeout 400000
+
+inductive norm_hom2 : Π (X Y : prod_coprod C), Type
+| of_cat {X Y : C} (f : X ⟶ Y) : norm_hom2 (of_cat' X) (of_cat' Y)
+| coprod_mk {X Y Z : prod_coprod C} (f : norm_hom2 X Z) (g : norm_hom2 Y Z) :
+  norm_hom2 (X.coprod Y) Z
+| comp_inl {X Y Z : prod_coprod C} (f : norm_hom2 X Y) :
+  norm_hom2 X (coprod Y Z)
+| comp_inr {X Y Z : prod_coprod C} (f : norm_hom2 X Z) :
+  norm_hom2 X (coprod Y Z)
+| prod_mk {X Y Z : prod_coprod C} (f : norm_hom2 X Y) (g : norm_hom2 X Z) :
+  norm_hom2 X (prod Y Z)
+| fst_comp {X Y Z : prod_coprod C} (f : norm_hom2 X Z) :
+  norm_hom2 (prod X Y) Z
+| snd_comp {X Y Z : prod_coprod C} (f : norm_hom2 Y Z) :
+  norm_hom2 (prod X Y) Z
+
+@[simp] def norm_hom.to_norm_hom2 : Π {X Y : prod_coprod C} (f : norm_hom (sum.inl (X, Y))),
+  norm_hom2 X Y
+| _ _ (norm_hom.of_cat f) := norm_hom2.of_cat f
+| _ _ (norm_hom.coprod_mk f g) := norm_hom2.coprod_mk (norm_hom.to_norm_hom2 f) (norm_hom.to_norm_hom2 g)
+| _ _ (norm_hom.fst_comp f) := norm_hom2.fst_comp (norm_hom.to_norm_hom2 f)
+| _ _ (norm_hom.snd_comp f) := norm_hom2.snd_comp (norm_hom.to_norm_hom2 f)
+| _ _ (norm_hom.comp_inl_of_cat f) := norm_hom2.comp_inl (norm_hom.to_norm_hom2 f)
+| _ _ (norm_hom.comp_inr_of_cat f) := norm_hom2.comp_inr (norm_hom.to_norm_hom2 f)
+| _ _ (norm_hom.prod_mk_of_cat f g) := norm_hom2.prod_mk (norm_hom.to_norm_hom2 f) (norm_hom.to_norm_hom2 g)
+| _ _ (norm_hom.of_not_proj (norm_hom.comp_inl_not_proj f)) :=
+  norm_hom2.comp_inl (norm_hom.to_norm_hom2 (norm_hom.of_not_proj f))
+| _ _ (norm_hom.of_not_proj (norm_hom.comp_inr_not_proj f)) :=
+  norm_hom2.comp_inr (norm_hom.to_norm_hom2 (norm_hom.of_not_proj f))
+| _ _ (norm_hom.of_not_proj (norm_hom.prod_mk_not_proj f g)) :=
+  norm_hom2.prod_mk (norm_hom.to_norm_hom2 f.of_not_proj) (norm_hom.to_norm_hom2 g.of_not_proj)
+| _ _ (norm_hom.of_not_proj (norm_hom.prod_mk_not_proj_fst_comp f g)) :=
+  norm_hom2.prod_mk (norm_hom.to_norm_hom2 f.of_not_proj) (norm_hom.to_norm_hom2 g.fst_comp)
+| _ _ (norm_hom.of_not_proj (norm_hom.prod_mk_not_proj_snd_comp f g)) :=
+  norm_hom2.prod_mk (norm_hom.to_norm_hom2 f.of_not_proj) (norm_hom.to_norm_hom2 g.snd_comp)
+| _ _ (norm_hom.of_not_proj (norm_hom.prod_mk_fst_comp_not_proj f g)) :=
+  norm_hom2.prod_mk (norm_hom.to_norm_hom2 f.fst_comp) (norm_hom.to_norm_hom2 g.of_not_proj)
+| _ _ (norm_hom.of_not_proj (norm_hom.prod_mk_snd_comp_not_proj f g)) :=
+  norm_hom2.prod_mk (norm_hom.to_norm_hom2 f.snd_comp) (norm_hom.to_norm_hom2 g.of_not_proj)
+| _ _ (norm_hom.of_not_proj (norm_hom.prod_mk_fst_comp_snd_comp f g)) :=
+  norm_hom2.prod_mk (norm_hom.to_norm_hom2 f.fst_comp) (norm_hom.to_norm_hom2 g.snd_comp)
+| _ _ (norm_hom.of_not_proj (norm_hom.prod_mk_snd_comp_fst_comp f g)) :=
+  norm_hom2.prod_mk (norm_hom.to_norm_hom2 f.snd_comp) (norm_hom.to_norm_hom2 g.fst_comp)
+
+@[simp] def norm_hom2.comp : Π {X Y Z : prod_coprod C} (f : norm_hom2 X Y)
+  (g : norm_hom2 Y Z), norm_hom2 X Z
+| _ _ _ (norm_hom2.coprod_mk f g) h :=
+  norm_hom2.coprod_mk (norm_hom2.comp f h) (norm_hom2.comp g h)
+| _ _ _ (norm_hom2.fst_comp f) g :=
+  norm_hom2.fst_comp (norm_hom2.comp f g)
+| _ _ _ (norm_hom2.snd_comp f) g :=
+  norm_hom2.snd_comp (norm_hom2.comp f g)
+-- | _ _ _ f (norm_hom2.prod_mk g h) :=
+--   norm_hom2.prod_mk (norm_hom2.comp f g) (norm_hom2.comp f h)
+-- | _ _ _ f (norm_hom2.comp_inl g) :=
+--   norm_hom2.comp_inl (norm_hom2.comp f g)
+-- | _ _ _ f (norm_hom2.comp_inr g) :=
+--   norm_hom2.comp_inr (norm_hom2.comp f g)
+| _ _ _ (norm_hom2.of_cat f) (norm_hom2.of_cat g) :=
+  norm_hom2.of_cat (f ≫ g)
+| _ _ _ (norm_hom2.comp_inl f) (norm_hom2.coprod_mk g h) :=
+  norm_hom2.comp f g
+| _ _ _ (norm_hom2.comp_inr f) (norm_hom2.coprod_mk g h) :=
+  norm_hom2.comp f h
+| _ _ _  (norm_hom2.prod_mk f g) (norm_hom2.fst_comp h) :=
+  norm_hom2.comp f h
+| _ _ _  (norm_hom2.prod_mk f g) (norm_hom2.snd_comp h) :=
+  norm_hom2.comp g h
+--repeated cases
+| _ _ _ (norm_hom2.of_cat f) (norm_hom2.comp_inl g) :=
+  norm_hom2.comp_inl (norm_hom2.comp (norm_hom2.of_cat f) g)
+| _ _ _ (norm_hom2.of_cat f) (norm_hom2.comp_inr g) :=
+  norm_hom2.comp_inr (norm_hom2.comp (norm_hom2.of_cat f) g)
+| _ _ _ (norm_hom2.of_cat f) (norm_hom2.prod_mk g h) :=
+  norm_hom2.prod_mk (norm_hom2.comp (norm_hom2.of_cat f) g)
+    (norm_hom2.comp (norm_hom2.of_cat f) h)
+| _ _ _ f'@(norm_hom2.comp_inl f) (norm_hom2.comp_inl g) :=
+  norm_hom2.comp_inl (norm_hom2.comp f' g)
+| _ _ _ f'@(norm_hom2.comp_inr f) (norm_hom2.comp_inl g) :=
+  norm_hom2.comp_inl (norm_hom2.comp f' g)
+| _ _ _ f'@(norm_hom2.comp_inr f) (norm_hom2.comp_inr g) :=
+  norm_hom2.comp_inr (norm_hom2.comp f' g)
+| _ _ _ f'@(norm_hom2.comp_inl f) (norm_hom2.comp_inr g) :=
+  norm_hom2.comp_inr (norm_hom2.comp f' g)
+| _ _ _ f'@(norm_hom2.comp_inl f) (norm_hom2.prod_mk g h) :=
+  norm_hom2.prod_mk (norm_hom2.comp f' g) (norm_hom2.comp f' h)
+| _ _ _ f'@(norm_hom2.comp_inr f) (norm_hom2.prod_mk g h) :=
+  norm_hom2.prod_mk (norm_hom2.comp f' g) (norm_hom2.comp f' h)
+| _ _ _ f@(norm_hom2.prod_mk _ _) (norm_hom2.comp_inl g) :=
+  norm_hom2.comp_inl (norm_hom2.comp f g)
+| _ _ _ f@(norm_hom2.prod_mk _ _) (norm_hom2.comp_inr g) :=
+  norm_hom2.comp_inr (norm_hom2.comp f g)
+| _ _ _ f@(norm_hom2.prod_mk _ _) (norm_hom2.prod_mk g h) :=
+  norm_hom2.prod_mk (norm_hom2.comp f g) (norm_hom2.comp f h)
+
+@[simp] def norm_hom2.to_norm_hom : Π {X Y : prod_coprod C} (f : norm_hom2 X Y),
+  norm_hom (sum.inl (X, Y))
+| _ _ (norm_hom2.of_cat f) := norm_hom.of_cat f
+| _ _ (norm_hom2.comp_inl f) := norm_hom.comp_inl (norm_hom2.to_norm_hom f)
+| _ _ (norm_hom2.comp_inr f) := norm_hom.comp_inr (norm_hom2.to_norm_hom f)
+| _ _ (norm_hom2.fst_comp f) := norm_hom.fst_comp (norm_hom2.to_norm_hom f)
+| _ _ (norm_hom2.snd_comp f) := norm_hom.snd_comp (norm_hom2.to_norm_hom f)
+| _ _ (norm_hom2.prod_mk f g) := norm_hom.prod_mk (norm_hom2.to_norm_hom f) (norm_hom2.to_norm_hom g)
+| _ _ (norm_hom2.coprod_mk f g) := norm_hom.coprod_mk (norm_hom2.to_norm_hom f) (norm_hom2.to_norm_hom g)
+
+@[simp] def norm_hom2.to_hom : Π {X Y : prod_coprod C} (f : norm_hom2 X Y), (X ⟶ Y)
+| _ _ (norm_hom2.of_cat f) := of_cat.map f
+| _ _ (norm_hom2.comp_inl f) := norm_hom2.to_hom f ≫ inl
+| _ _ (norm_hom2.comp_inr f) := norm_hom2.to_hom f ≫ inr
+| _ _ (norm_hom2.fst_comp f) := fst ≫ norm_hom2.to_hom f
+| _ _ (norm_hom2.snd_comp f) := snd ≫ norm_hom2.to_hom f
+| _ _ (norm_hom2.prod_mk f g) := prod_mk (norm_hom2.to_hom f) (norm_hom2.to_hom g)
+| _ _ (norm_hom2.coprod_mk f g) := coprod_mk (norm_hom2.to_hom f) (norm_hom2.to_hom g)
+
+@[simp] def norm_hom.comp {X Y Z : prod_coprod C} (f : norm_hom (sum.inl (X, Y)))
+  (g : norm_hom (sum.inl (Y, Z))) : norm_hom (sum.inl (X, Z)) :=
+(f.to_norm_hom2.comp g.to_norm_hom2).to_norm_hom
+
+lemma comp_id {X Y Z : prod_coprod C}
+  (f : norm_hom (sum.inl (X, Y))) :
+  f.comp (norm_hom.id _) = f :=
+begin
+
+end
+-- | (coprod W X) Y Z (norm_hom.coprod_mk f g) := norm_hom.coprod_mk (norm_hom.comp_inl f) (norm_hom.comp_inl g)
+-- | (prod W X) Y Z (norm_hom.fst_comp f) := norm_hom.fst_comp (norm_hom.comp_inl f)
+-- | (prod W X) Y Z (norm_hom.snd_comp f) := norm_hom.snd_comp (norm_hom.comp_inl f)
+-- | (prod W X) Y Z (norm_hom.of_not_proj f) := norm_hom.of_not_proj (norm_hom.comp_inl_not_proj f)
+
+@[simp] def norm_syntax : Π {X Y : prod_coprod C} (f : syntax X Y),
+  norm_hom (sum.inl (X, Y))
+| _ _ (syntax.of_cat f) := norm_hom.of_cat f
+| _ _ (syntax.id _) := norm_hom.id _
+| _ _ (syntax.comp f g) := (norm_syntax f).comp (norm_syntax g)
+| _ _ syntax.fst := norm_hom.fst
+| _ _ syntax.snd := norm_hom.snd
+| _ _ (syntax.prod_mk f g) := norm_hom.prod_mk (norm_syntax f) (norm_syntax g)
+| _ _ syntax.inl := norm_hom.inl
+| _ _ syntax.inr := norm_hom.inr
+| _ _ (syntax.coprod_mk f g) := norm_hom.coprod_mk (norm_syntax f) (norm_syntax g)
+
+lemma norm_syntax_rel : Π {X Y : prod_coprod C} {f g : syntax X Y}, rel f g → norm_syntax f = norm_syntax g :=
+begin
+  intros X Y f g h,
+  induction h; simp [*, norm_hom.to_norm_hom2, norm_hom.id] at *,
+
+end
+#exit
+@[simp] lemma to_hom_comp_inl : Π {X Y Z : prod_coprod C} (f : norm_hom (sum.inl (X, Y))),
+  (@norm_hom.comp_inl _ _ _ _ Z f).to_norm_hom2.to_hom = f.to_norm_hom2.to_hom ≫ inl
+| (of_cat' X) _ _ f := by simp [norm_hom.comp_inl]
+| (coprod W X) Y Z (norm_hom.coprod_mk f g) :=
+  by ext; simp [norm_hom.comp_inl, to_hom_comp_inl f, to_hom_comp_inl g,
+    ← category.assoc]
+| (prod W X) Y Z (norm_hom.fst_comp f) := by simp [norm_hom.comp_inl, to_hom_comp_inl f]
+| (prod W X) Y Z (norm_hom.snd_comp f) := by simp [norm_hom.comp_inl, to_hom_comp_inl f]
+| (prod W X) Y Z (norm_hom.of_not_proj f) :=
+  by simp [norm_hom.comp_inl, to_hom_comp_inl f.of_not_proj]
+
+@[simp] lemma to_hom_comp_inr : Π {X Y Z : prod_coprod C} (f : norm_hom (sum.inl (X, Z))),
+  (@norm_hom.comp_inr _ _ X Y Z f).to_norm_hom2.to_hom = f.to_norm_hom2.to_hom ≫ inr
+| (of_cat' X) _ _ f := by simp [norm_hom.comp_inr]
+| (coprod W X) Y Z (norm_hom.coprod_mk f g) :=
+  by ext; simp [norm_hom.comp_inr, to_hom_comp_inr f, to_hom_comp_inr g,
+    ← category.assoc]
+| (prod W X) Y Z (norm_hom.fst_comp f) := by simp [norm_hom.comp_inr, to_hom_comp_inr f]
+| (prod W X) Y Z (norm_hom.snd_comp f) := by simp [norm_hom.comp_inr, to_hom_comp_inr f]
+| (prod W X) Y Z (norm_hom.of_not_proj f) :=
+  by simp [norm_hom.comp_inr, to_hom_comp_inr f.of_not_proj]
+
+@[simp] lemma to_hom_prod_mk : Π {X Y Z : prod_coprod C} (f : norm_hom (sum.inl (X, Y)))
+  (g : norm_hom (sum.inl (X, Z))),
+  (f.prod_mk g).to_norm_hom2.to_hom = prod_mk f.to_norm_hom2.to_hom g.to_norm_hom2.to_hom
+| (of_cat' X) Y Z f g := by simp [norm_hom.prod_mk]
+| (prod W X) Y Z (norm_hom.fst_comp f) (norm_hom.fst_comp g) :=
+  by ext; simp [norm_hom.prod_mk, to_hom_prod_mk f, to_hom_prod_mk g]
+| (prod W X) Y Z (norm_hom.snd_comp f) (norm_hom.snd_comp g) :=
+  by ext; simp [norm_hom.prod_mk, to_hom_prod_mk f, to_hom_prod_mk g]
+| (prod W X) Y Z (norm_hom.fst_comp f) (norm_hom.snd_comp g) :=
+  by ext; simp [norm_hom.prod_mk, to_hom_prod_mk f, to_hom_prod_mk g]
+| (prod W X) Y Z (norm_hom.snd_comp f) (norm_hom.fst_comp g) :=
+  by ext; simp [norm_hom.prod_mk, to_hom_prod_mk f, to_hom_prod_mk g]
+| (prod W X) Y Z (norm_hom.of_not_proj f) (norm_hom.fst_comp g) :=
+  by ext; simp [norm_hom.prod_mk, to_hom_prod_mk f.of_not_proj, to_hom_prod_mk g]
+| (prod W X) Y Z (norm_hom.of_not_proj f) (norm_hom.snd_comp g) :=
+  by ext; simp [norm_hom.prod_mk, to_hom_prod_mk f.of_not_proj, to_hom_prod_mk g]
+| (prod W X) Y Z (norm_hom.fst_comp f) (norm_hom.of_not_proj g)  :=
+  by ext; simp [norm_hom.prod_mk, to_hom_prod_mk f, to_hom_prod_mk g.of_not_proj]
+| (prod W X) Y Z (norm_hom.snd_comp f) (norm_hom.of_not_proj g)  :=
+  by ext; simp [norm_hom.prod_mk, to_hom_prod_mk f, to_hom_prod_mk g.of_not_proj]
+| (prod W X) Y Z (norm_hom.of_not_proj f) (norm_hom.of_not_proj g)  :=
+  by ext; simp [norm_hom.prod_mk, to_hom_prod_mk f.of_not_proj, to_hom_prod_mk g.of_not_proj]
+| (coprod W X) Y Z (norm_hom.coprod_mk f g) (norm_hom.coprod_mk h i) :=
+  by ext; simp [norm_hom.prod_mk, to_hom_prod_mk f, to_hom_prod_mk g]
+
+@[simp] lemma to_hom_comp : Π {X Y Z : prod_coprod C} (f : norm_hom2 X Y) (g : norm_hom2 Y Z),
+  (f.comp g).to_hom = f.to_hom ≫ g.to_hom
+| _ _ _ (norm_hom2.coprod_mk f g) h :=
+  by ext; simp [to_hom_comp f, to_hom_comp g, ← category.assoc]
+| _ _ _ (norm_hom2.fst_comp f) g :=
+  by simp [to_hom_comp f]
+| _ _ _ (norm_hom2.snd_comp f) g :=
+  by simp [to_hom_comp f]
+-- | _ _ _ f (norm_hom2.prod_mk g h) :=
+-- | _ _ _ f (norm_hom2.comp_inl g) := g)
+-- | _ _ _ f (norm_hom2.comp_inr g) :=
+| _ _ _ (norm_hom2.of_cat f) (norm_hom2.of_cat g) :=
+  by simp
+| _ _ _ (norm_hom2.comp_inl f) (norm_hom2.coprod_mk g h) :=
+  by simp [to_hom_comp f]
+| _ _ _ (norm_hom2.comp_inr f) (norm_hom2.coprod_mk g h) :=
+  by simp [to_hom_comp f]
+| _ _ _  (norm_hom2.prod_mk f g) (norm_hom2.fst_comp h) :=
+  by simp [to_hom_comp _ h, ← category.assoc]
+| _ _ _  (norm_hom2.prod_mk f g) (norm_hom2.snd_comp h) :=
+  by simp [to_hom_comp _ h, ← category.assoc]
+--repeated cases
+| _ _ _ (norm_hom2.of_cat f) (norm_hom2.comp_inl g) :=
+  by simp [to_hom_comp _ g]
+| _ _ _ (norm_hom2.of_cat f) (norm_hom2.comp_inr g) :=
+  by simp [to_hom_comp _ g]
+| _ _ _ (norm_hom2.of_cat f) (norm_hom2.prod_mk g h) :=
+  by ext; simp [to_hom_comp _ g, to_hom_comp _ h]
+| _ _ _ (norm_hom2.comp_inl f) (norm_hom2.comp_inl g) :=
+  by simp [to_hom_comp _ g]
+| _ _ _ (norm_hom2.comp_inr f) (norm_hom2.comp_inl g) :=
+  by simp [to_hom_comp _ g]
+| _ _ _ f'@(norm_hom2.comp_inr f) (norm_hom2.comp_inr g) :=
+  by simp [to_hom_comp _ g]
+| _ _ _ f'@(norm_hom2.comp_inl f) (norm_hom2.comp_inr g) :=
+  by simp [to_hom_comp _ g]
+| _ _ _ f'@(norm_hom2.comp_inl f) (norm_hom2.prod_mk g h) :=
+  by ext; simp [to_hom_comp _ g, to_hom_comp _ h]
+| _ _ _ f'@(norm_hom2.comp_inr f) (norm_hom2.prod_mk g h) :=
+  by ext; simp [to_hom_comp _ g, to_hom_comp _ h]
+| _ _ _ f@(norm_hom2.prod_mk _ _) (norm_hom2.comp_inl g) :=
+  by simp [to_hom_comp _ g]
+| _ _ _ f@(norm_hom2.prod_mk _ _) (norm_hom2.comp_inr g) :=
+  by simp [to_hom_comp _ g]
+| _ _ _ f@(norm_hom2.prod_mk _ _) (norm_hom2.prod_mk g h) :=
+  by ext; simp [to_hom_comp _ g, to_hom_comp _ h]
+
+
+
 #exit
 lemma to_presheaf_syntax_comp {X Y Z : prod_coprod C} (f : syntax X Y) (g : syntax Y Z) :
   to_presheaf_syntax (f.comp g) = to_presheaf_syntax f ≫ to_presheaf_syntax g := rfl
